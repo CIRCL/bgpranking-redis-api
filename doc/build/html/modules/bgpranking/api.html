@@ -1,0 +1,594 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bgpranking.api &mdash; BGP Ranking Python API 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="BGP Ranking Python API 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">BGP Ranking Python API 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for bgpranking.api</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entry point of the API</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">IPy</span>
+<span class="c">#import datetime</span>
+
+<span class="kn">import</span> <span class="nn">helper_global</span> <span class="kn">as</span> <span class="nn">h</span>
+<span class="kn">import</span> <span class="nn">constraints</span> <span class="kn">as</span> <span class="nn">c</span>
+
+<span class="n">__owner_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="get_daily_rank_multiple_asns"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_daily_rank_multiple_asns">[docs]</a><span class="k">def</span> <span class="nf">get_daily_rank_multiple_asns</span><span class="p">(</span><span class="n">asns</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the ranks of a list of ASNs for one day and one source.</span>
+
+<span class="sd">        :param asns: list of ASNs</span>
+<span class="sd">        :param date: date of the rank (format: YYYY-MM-DD)</span>
+<span class="sd">        :param source: name of the source for the rank</span>
+
+
+<span class="sd">        :rtype: list of rank by ASN</span>
+
+<span class="sd">            .. note:: Format of the output:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    [</span>
+<span class="sd">                        (asn1, rank),</span>
+<span class="sd">                        (asn2, rank),</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s">&#39;|{date}|{source}|rankv{ip_version}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="p">,</span> <span class="n">ip_version</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">ip_version</span><span class="p">)</span>
+    <span class="n">to_get</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;{asn}{string}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span> <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">asn</span> <span class="ow">in</span> <span class="n">asns</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_get</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">asns</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db</span><span class="o">.</span><span class="n">mget</span><span class="p">(</span><span class="n">to_get</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="get_all_ranks_single_asn"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_all_ranks_single_asn">[docs]</a><span class="k">def</span> <span class="nf">get_all_ranks_single_asn</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">dates_sources</span><span class="p">,</span> <span class="n">with_details_sources</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all the ranks on a timeframe for a single ASN.</span>
+
+<span class="sd">        :param asn: Autonomous System Number</span>
+<span class="sd">        :param dates_sources: Dictionaries of the dates and sources</span>
+
+<span class="sd">            .. note:: Format of the dictionary:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        YYYY-MM-DD: [source1, source2, ...],</span>
+<span class="sd">                        YYYY-MM-DD: [source1, source2, ...],</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    }</span>
+
+<span class="sd">        :param with_details_sources: Returns the details by sources if True</span>
+
+<span class="sd">        :rype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the output:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        date1:</span>
+<span class="sd">                            {</span>
+<span class="sd">                                &#39;details&#39;:</span>
+<span class="sd">                                    [</span>
+<span class="sd">                                        (source1, rank),</span>
+<span class="sd">                                        (source2, rank),</span>
+<span class="sd">                                        ...</span>
+<span class="sd">                                    ],</span>
+<span class="sd">                                &#39;total&#39;: sum_of_ranks</span>
+<span class="sd">                            }</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    }</span>
+
+<span class="sd">                The details key is only present if ``with_details_sources``</span>
+<span class="sd">                is True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">h</span><span class="o">.</span><span class="n">asn_exists</span><span class="p">(</span><span class="n">asn</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">to_return</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s">&#39;{asn}|{date}|{source}|rankv{ip_version}&#39;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db</span><span class="o">.</span><span class="n">pipeline</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">dates_sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">mget</span><span class="p">([</span><span class="n">string</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span><span class="o">=</span><span class="n">asn</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+                <span class="n">ip_version</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">ip_version</span><span class="p">)</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">])</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">dates_sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">impacts</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_all_weights</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">sources_ranks</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">ranks</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">with_details_sources</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;details&#39;</span><span class="p">:</span> <span class="n">sources_ranks</span><span class="p">})</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;total&#39;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sources_ranks</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">][</span><span class="s">&#39;total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">impacts</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+</div>
+<div class="viewcode-block" id="get_all_ranks_all_asns"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_all_ranks_all_asns">[docs]</a><span class="k">def</span> <span class="nf">get_all_ranks_all_asns</span><span class="p">(</span><span class="n">dates_sources</span><span class="p">,</span> <span class="n">with_details_sources</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all ranks for all the ASNs on a timeframe.</span>
+
+<span class="sd">        :param dates_sources: Dictionaries of the dates and sources</span>
+
+<span class="sd">            .. note:: Format of the dictionary:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        YYYY-MM-DD: [source1, source2, ...],</span>
+<span class="sd">                        YYYY-MM-DD: [source1, source2, ...],</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    }</span>
+
+<span class="sd">        :param with_details_sources: Also returns the ranks by sources</span>
+
+<span class="sd">        :rype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the dictionary:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        YYYY-MM-DD:</span>
+<span class="sd">                            {</span>
+<span class="sd">                                asn1 :</span>
+<span class="sd">                                    {</span>
+<span class="sd">                                        &#39;details&#39;:</span>
+<span class="sd">                                            [</span>
+<span class="sd">                                                (source1, rank),</span>
+<span class="sd">                                                (source2, rank),</span>
+<span class="sd">                                                ...</span>
+<span class="sd">                                            ],</span>
+<span class="sd">                                        &#39;total&#39;: sum_of_ranks</span>
+<span class="sd">                                    }</span>
+<span class="sd">                                ...</span>
+<span class="sd">                            }</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    }</span>
+
+<span class="sd">                The details key is only present if ``with_details_sources``</span>
+<span class="sd">                is True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">asns_keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c"># prepare the keys to get all the asns by date and source</span>
+    <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">dates_sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">asns_keys</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s">&#39;{date}|{source}|asns&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="p">)</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">])</span>
+    <span class="c"># get it</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">asns_keys</span><span class="p">]</span>
+    <span class="n">asns_list</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">asns</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="n">asns_list</span><span class="p">)</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">asn</span> <span class="ow">in</span> <span class="n">asns</span><span class="p">:</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="n">get_all_ranks_single_asn</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">dates_sources</span><span class="p">,</span>
+                <span class="n">with_details_sources</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">entries</span> <span class="ow">in</span> <span class="n">details</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">to_return</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">date</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">][</span><span class="n">asn</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+</div>
+<div class="viewcode-block" id="get_owner"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_owner">[docs]</a><span class="k">def</span> <span class="nf">get_owner</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the description of the ASN (usually the owner name).</span>
+
+<span class="sd">        :param asn: Autonomous System Number</span>
+<span class="sd">        :param block: IP Block you are looking for</span>
+<span class="sd">        :rtype: List</span>
+
+<span class="sd">            .. note:: Format of the list:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    [asn, block, owner]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">__owner_cache</span>
+    <span class="k">if</span> <span class="n">__owner_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asn</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">h</span><span class="o">.</span><span class="n">asn_exists</span><span class="p">(</span><span class="n">asn</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">unknown_asn</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="n">asn</span><span class="p">)</span>
+        <span class="n">t_keys</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&#39;{asn}|{t}|ips_block&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
+        <span class="n">temp_blocks</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">mget</span><span class="p">(</span><span class="n">t_keys</span><span class="p">)</span>
+        <span class="n">__owner_cache</span><span class="p">[</span><span class="n">asn</span><span class="p">]</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">temp_blocks</span><span class="p">)</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">ts</span><span class="p">,</span> <span class="n">temp_block</span> <span class="ow">in</span> <span class="n">__owner_cache</span><span class="p">[</span><span class="n">asn</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">temp_block</span><span class="o">==</span><span class="n">block</span><span class="p">:</span>
+            <span class="n">owner</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;{asn}|{t}|owner&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span><span class="p">))</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">asn</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">owner</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="get_asn_descs"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_asn_descs">[docs]</a><span class="k">def</span> <span class="nf">get_asn_descs</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sources</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all what is available in the database about an ASN for one day</span>
+
+<span class="sd">        :param asn: Autonomous System Number</span>
+<span class="sd">        :param date: Date of the information (default: last ranked day)</span>
+<span class="sd">        :param sources: List of sources (default: the available sources</span>
+<span class="sd">                        at ``date``)</span>
+<span class="sd">        :rtype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the dictionary:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                        {</span>
+<span class="sd">                            &#39;date&#39;: date,</span>
+<span class="sd">                            &#39;sources&#39;: [source1, source2, ...],</span>
+<span class="sd">                            &#39;asn&#39;: asn,</span>
+<span class="sd">                            asn:</span>
+<span class="sd">                                {</span>
+<span class="sd">                                    &#39;clean_blocks&#39;:</span>
+<span class="sd">                                        [</span>
+<span class="sd">                                            (timestamp, block, descr),</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        ],</span>
+<span class="sd">                                    &#39;old_blocks&#39;:</span>
+<span class="sd">                                        [</span>
+<span class="sd">                                            (timestamp, block, descr),</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        ],</span>
+<span class="sd">                                    asn_timestamp:</span>
+<span class="sd">                                        {</span>
+<span class="sd">                                            &#39;owner&#39;: owner_description,</span>
+<span class="sd">                                            &#39;ip_block&#39;: block,</span>
+<span class="sd">                                            &#39;nb_of_ips&#39;: nb,</span>
+<span class="sd">                                            &#39;sources&#39;: [source1, source2, ...]</span>
+<span class="sd">                                            &#39;rank&#39;: subnet_rank</span>
+<span class="sd">                                        },</span>
+<span class="sd">                                    ...</span>
+<span class="sd">                                }</span>
+<span class="sd">                        }</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">h</span><span class="o">.</span><span class="n">asn_exists</span><span class="p">(</span><span class="n">asn</span><span class="p">):</span>
+        <span class="c"># The ASN does not exists in the database</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_default_date</span><span class="p">()</span>
+    <span class="n">day_sources</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">daily_sources</span><span class="p">([</span><span class="n">date</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">sources</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">day_sources</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">day_sources</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sources</span><span class="p">)))</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;date&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">,</span> <span class="s">&#39;sources&#39;</span><span class="p">:</span> <span class="n">sources</span><span class="p">,</span> <span class="s">&#39;asn&#39;</span><span class="p">:</span> <span class="n">asn</span><span class="p">,</span> <span class="n">asn</span><span class="p">:</span> <span class="p">{}}</span>
+    <span class="k">for</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="n">asn</span><span class="p">):</span>
+        <span class="c"># Get the number of IPs found in the database for each subnet</span>
+        <span class="n">asn_timestamp_key</span> <span class="o">=</span> <span class="s">&#39;{asn}|{timestamp}|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span>
+                                <span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">scard</span><span class="p">(</span><span class="s">&#39;{asn_ts}{date}|{source}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn_ts</span><span class="o">=</span><span class="n">asn_timestamp_key</span><span class="p">,</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">))</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">]</span>
+        <span class="n">ips_by_sources</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+        <span class="n">nb_of_ips</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ips_by_sources</span><span class="p">)</span>
+
+        <span class="n">key_owner</span> <span class="o">=</span> <span class="s">&#39;{asn_ts}owner&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn_ts</span> <span class="o">=</span> <span class="n">asn_timestamp_key</span><span class="p">)</span>
+        <span class="n">key_block</span> <span class="o">=</span> <span class="s">&#39;{asn_ts}ips_block&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn_ts</span> <span class="o">=</span> <span class="n">asn_timestamp_key</span><span class="p">)</span>
+        <span class="n">key_clean_set</span> <span class="o">=</span> <span class="s">&#39;{asn}|{date}|clean_set&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">)</span>
+        <span class="n">owner</span><span class="p">,</span> <span class="n">ip_block</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">mget</span><span class="p">([</span><span class="n">key_owner</span><span class="p">,</span> <span class="n">key_block</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">nb_of_ips</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">impacts</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_all_weights</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+            <span class="c"># Compute the local ranking: the ranking if this subnet is the</span>
+            <span class="c"># only one for this AS</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">sum_rank</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">sources_exists</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+                <span class="n">sum_rank</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ips_by_sources</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">impacts</span><span class="p">[</span><span class="n">source</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">ips_by_sources</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">sources_exists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">local_rank</span> <span class="o">=</span> <span class="n">sum_rank</span> <span class="o">/</span> <span class="n">IPy</span><span class="o">.</span><span class="n">IP</span><span class="p">(</span><span class="n">ip_block</span><span class="p">)</span><span class="o">.</span><span class="n">len</span><span class="p">()</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">][</span><span class="n">timestamp</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;owner&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">,</span>
+                    <span class="s">&#39;ip_block&#39;</span><span class="p">:</span> <span class="n">ip_block</span><span class="p">,</span> <span class="s">&#39;nb_of_ips&#39;</span><span class="p">:</span> <span class="n">nb_of_ips</span><span class="p">,</span>
+                    <span class="s">&#39;sources&#39;</span><span class="p">:</span> <span class="n">sources_exists</span><span class="p">,</span> <span class="s">&#39;rank&#39;</span><span class="p">:</span> <span class="n">local_rank</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="n">ip_block</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="n">key_clean_set</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;clean_blocks&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">][</span><span class="s">&#39;clean_blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">][</span><span class="s">&#39;clean_blocks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ip_block</span><span class="p">,</span> <span class="n">owner</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Not announced anymore.</span>
+            <span class="k">if</span> <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;old_blocks&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">][</span><span class="s">&#39;old_blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">asn</span><span class="p">][</span><span class="s">&#39;old_blocks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ip_block</span><span class="p">,</span> <span class="n">owner</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+</div>
+<div class="viewcode-block" id="get_ips_descs"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_ips_descs">[docs]</a><span class="k">def</span> <span class="nf">get_ips_descs</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">asn_timestamp</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sources</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all what is available in the database about an subnet for one day</span>
+
+<span class="sd">        :param asn: Autonomous System Number</span>
+<span class="sd">        :param asn_timestamp: First the subnet has been seen in the db</span>
+<span class="sd">                              (for this ASN)</span>
+<span class="sd">        :param date: Date of the information (default: last ranked day)</span>
+<span class="sd">        :param sources: List of sources (default: the available sources</span>
+<span class="sd">                        at ``date``)</span>
+
+<span class="sd">        :rtype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the dictionary:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        &#39;date&#39;: date,</span>
+<span class="sd">                        &#39;sources&#39;: [source1, source2, ...],</span>
+<span class="sd">                        &#39;asn&#39;: asn,</span>
+<span class="sd">                        &#39;timestamp&#39;: asn_timestamp</span>
+<span class="sd">                        asn_timestamp:</span>
+<span class="sd">                            {</span>
+<span class="sd">                                ip: [source1, source2, ...],</span>
+<span class="sd">                                ...</span>
+<span class="sd">                            }</span>
+<span class="sd">                    }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_default_date</span><span class="p">()</span>
+    <span class="n">day_sources</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">daily_sources</span><span class="p">([</span><span class="n">date</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">sources</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">day_sources</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">day_sources</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sources</span><span class="p">)))</span>
+
+    <span class="n">asn_timestamp_key</span> <span class="o">=</span> <span class="s">&#39;{asn}|{timestamp}|{date}|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span><span class="p">,</span>
+                    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">asn_timestamp</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">)</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">pipeline</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="s">&#39;{asn_ts}{source}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">asn_ts</span> <span class="o">=</span> <span class="n">asn_timestamp_key</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">]</span>
+    <span class="n">ips_by_source</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;date&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">,</span> <span class="s">&#39;sources&#39;</span><span class="p">:</span> <span class="n">sources</span><span class="p">,</span> <span class="s">&#39;asn&#39;</span><span class="p">:</span> <span class="n">asn</span><span class="p">,</span>
+            <span class="s">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">asn_timestamp</span><span class="p">,</span> <span class="n">asn_timestamp</span><span class="p">:</span> <span class="p">{}}</span>
+    <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="n">ips</span> <span class="o">=</span> <span class="n">ips_by_source</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">ip_details</span> <span class="ow">in</span> <span class="n">ips</span><span class="p">:</span>
+            <span class="n">ip</span><span class="p">,</span> <span class="n">timestamp</span> <span class="o">=</span> <span class="n">ip_details</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">to_return</span><span class="p">[</span><span class="n">asn_timestamp</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">asn_timestamp</span><span class="p">][</span><span class="n">ip</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">source</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">to_return</span><span class="p">[</span><span class="n">asn_timestamp</span><span class="p">][</span><span class="n">ip</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+</div>
+<div class="viewcode-block" id="get_stats"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.get_stats">[docs]</a><span class="k">def</span> <span class="nf">get_stats</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return amount of asn and subnets found by source, for all the</span>
+<span class="sd">        cached days.</span>
+
+<span class="sd">        :rtype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the Dictionary</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        date:</span>
+<span class="sd">                            {</span>
+<span class="sd">                                &#39;sources&#39;:</span>
+<span class="sd">                                    {</span>
+<span class="sd">                                        source : [nb_asns, nb_subnets],</span>
+<span class="sd">                                        ...</span>
+<span class="sd">                                    },</span>
+<span class="sd">                                &#39;total_asn&#39;: total_asn</span>
+<span class="sd">                                &#39;total_subnets&#39;: total_subnets</span>
+<span class="sd">                            }</span>
+<span class="sd">                        ...</span>
+<span class="sd">                    }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">__history_db_cache</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="s">&#39;all_dates&#39;</span><span class="p">))</span>
+    <span class="n">dates_sources</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">daily_sources</span><span class="p">(</span><span class="n">dates</span><span class="p">)))</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__global_db</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">dates_sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">current_key</span> <span class="o">=</span> <span class="s">&#39;{date}|{source}|asns&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">scard</span><span class="p">(</span><span class="n">current_key</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">scard</span><span class="p">(</span><span class="n">current_key</span> <span class="o">+</span> <span class="s">&#39;_details&#39;</span><span class="p">)</span>
+    <span class="n">cards</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">date</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">dates_sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;sources&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+        <span class="n">total_asn</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">total_subnets</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">nb_asns</span> <span class="o">=</span> <span class="n">cards</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">nb_subnets</span> <span class="o">=</span> <span class="n">cards</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">total_asn</span> <span class="o">+=</span> <span class="n">nb_asns</span>
+            <span class="n">total_subnets</span> <span class="o">+=</span> <span class="n">nb_subnets</span>
+            <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">][</span><span class="s">&#39;sources&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span><span class="n">source</span><span class="p">:</span> <span class="p">(</span><span class="n">nb_asns</span><span class="p">,</span> <span class="n">nb_subnets</span><span class="p">)})</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">][</span><span class="s">&#39;total_asn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_asn</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">date</span><span class="p">][</span><span class="s">&#39;total_subnets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_subnets</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+
+<span class="c"># Need cached data</span></div>
+<div class="viewcode-block" id="cache_get_daily_rank"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.cache_get_daily_rank">[docs]</a><span class="k">def</span> <span class="nf">cache_get_daily_rank</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;global&#39;</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **From the temporary database**</span>
+
+<span class="sd">        Get a single rank.</span>
+
+<span class="sd">        :param asn: Autonomous System Number</span>
+<span class="sd">        :param source: Source to use. global is the aggregated view for</span>
+<span class="sd">                       all the sources</span>
+<span class="sd">        :param date: Date of the information (default: last ranked day)</span>
+
+<span class="sd">        :rtype: List</span>
+
+<span class="sd">            .. note:: Format of the list</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    [asn, date, source, rank]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_default_date</span><span class="p">()</span>
+    <span class="n">histo_key</span> <span class="o">=</span> <span class="s">&#39;{date}|{source}|rankv{ip_version}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="p">,</span> <span class="n">ip_version</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">ip_version</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">asn</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db_cache</span><span class="o">.</span><span class="n">zscore</span><span class="p">(</span><span class="n">histo_key</span><span class="p">,</span> <span class="n">asn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="cache_get_top_asns"><a class="viewcode-back" href="../../code/API.html#bgpranking.api.cache_get_top_asns">[docs]</a><span class="k">def</span> <span class="nf">cache_get_top_asns</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="s">&#39;global&#39;</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">limit</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="n">with_sources</span> <span class="o">=</span> <span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **From the temporary database**</span>
+
+<span class="sd">        Get worse ASNs.</span>
+
+<span class="sd">        :param source: Source used to rank the ASNs. global is the</span>
+<span class="sd">                       aggregated view for all the sources</span>
+<span class="sd">        :param date: Date of the information (default: last ranked day)</span>
+<span class="sd">        :param limit: Number of ASNs to get</span>
+<span class="sd">        :param with_sources: Get the list of sources where each ASN has</span>
+<span class="sd">                             been found.</span>
+
+<span class="sd">        :rtype: Dictionary</span>
+
+<span class="sd">            .. note:: Format of the Dictionary</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    {</span>
+<span class="sd">                        &#39;source&#39;: source,</span>
+<span class="sd">                        &#39;date&#39;: date,</span>
+<span class="sd">                        &#39;top_list&#39;:</span>
+<span class="sd">                            [</span>
+<span class="sd">                                ((asn, rank), set([source1, source2, ...])),</span>
+<span class="sd">                                ...</span>
+<span class="sd">                            ]</span>
+<span class="sd">                    }</span>
+
+<span class="sd">                The set of sources is only presetn if ``with_sources``</span>
+<span class="sd">                is True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">get_default_date</span><span class="p">()</span>
+    <span class="n">histo_key</span> <span class="o">=</span> <span class="s">&#39;{date}|{histo_key}|rankv{ip_version}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">,</span>
+                       <span class="n">histo_key</span> <span class="o">=</span> <span class="n">source</span><span class="p">,</span> <span class="n">ip_version</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">ip_version</span><span class="p">)</span>
+
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;source&#39;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s">&#39;date&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">,</span> <span class="s">&#39;top_list&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db_cache</span><span class="o">.</span><span class="n">zrevrange</span><span class="p">(</span><span class="n">histo_key</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ranks</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">to_return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">with_sources</span><span class="p">:</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="s">&#39;top_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ranks</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">__history_db_cache</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">smembers</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">date</span><span class="p">,</span> <span class="n">rank</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span> <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="n">ranks</span><span class="p">]</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="s">&#39;top_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ranks</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">execute</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">BGP Ranking Python API 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, CIRCL.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
