@@ -8,8 +8,8 @@
 import IPy
 #import datetime
 
-import helper_global as h
-import constraints as c
+from . import helper_global as h
+from . import constraints as c
 
 __owner_cache = {}
 
@@ -40,7 +40,7 @@ def get_daily_rank_multiple_asns(asns, date, source):
             for asn in asns]
     if len(to_get) == 0:
         return []
-    return zip(asns, h.__history_db.mget(to_get))
+    return list(zip(asns, h.__history_db.mget(to_get)))
 
 def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
     """
@@ -99,11 +99,10 @@ def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
         impacts = h.get_all_weights(date)
         if len(sources) > 0:
             to_return[date] = {}
-            sources_ranks = zip(sources, ranks[i])
             if with_details_sources:
-                to_return[date].update({'details': sources_ranks})
+                to_return[date].update({'details': list(zip(sources, ranks[i]))})
             to_return[date].update({'total' : 0})
-            for s, r in sources_ranks:
+            for s, r in zip(sources, ranks[i]):
                 if r is not None:
                     to_return[date]['total'] += float(r) * float(impacts[s])
         i += 1
@@ -197,7 +196,7 @@ def get_owner(asn, block):
         t_keys = [ '{asn}|{t}|ips_block'.format(asn = asn, t = t)
                 for t in timestamps]
         temp_blocks = h.__global_db.mget(t_keys)
-        __owner_cache[asn] = zip(timestamps, temp_blocks)
+        __owner_cache[asn] = list(zip(timestamps, temp_blocks))
     owner = None
     for ts, temp_block in __owner_cache[asn]:
         if temp_block==block:
@@ -495,6 +494,6 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
     else:
         p = h.__history_db_cache.pipeline(False)
         [p.smembers('|'.join([date, rank[0]])) for rank in ranks]
-        to_return['top_list'] = zip(ranks, p.execute())
+        to_return['top_list'] = list(zip(ranks, p.execute()))
     return to_return
 
