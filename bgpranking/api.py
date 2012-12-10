@@ -105,7 +105,7 @@ def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
             for s, r in zip(sources, ranks[i]):
                 if r is not None:
                     to_return[date]['total'] += float(r) * float(impacts[s])
-        i += 1
+            i += 1
     return to_return
 
 def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
