@@ -365,10 +365,11 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
         i += 1
     return to_return
 
-def get_stats():
+def get_stats(dates_sources):
     """
-        Return amount of asn and subnets found by source, for all the
-        cached days.
+        Return amount of asn and subnets found by source on a list of days.
+
+        :param dates_sources: Dictionaries of the dates and sources
 
         :rtype: Dictionary
 
@@ -391,8 +392,6 @@ def get_stats():
                     }
 
     """
-    dates = sorted(h.__history_db_cache.smembers('all_dates'))
-    dates_sources = dict(zip(dates, h.daily_sources(dates)))
     to_return = {}
     p = h.__global_db.pipeline(False)
     for date, sources in dates_sources.iteritems():
@@ -420,7 +419,23 @@ def get_stats():
         to_return[date]['total_subnets'] = total_subnets
     return to_return
 
-# Need cached data
+# Need cached database
+def cache_get_dates():
+    """
+        **From the temporary database**
+
+        Get a list of dates. The ranking are available in the cache database.
+    """
+    return sorted(h.__history_db_cache.smembers('all_dates'))
+
+def cache_get_stats():
+    """
+        Return amount of asn and subnets found by source from the cache.
+    """
+    dates = cache_get_dates()
+    dates_sources = dict(zip(dates, h.daily_sources(dates)))
+    return get_stats(dates_sources)
+
 def cache_get_daily_rank(asn, source = 'global', date = None):
     """
         **From the temporary database**
@@ -480,11 +495,12 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
                 is True
 
     """
+    if source is None:
+        source = 'global'
     if date is None:
         date = h.get_default_date()
     histo_key = '{date}|{histo_key}|rankv{ip_version}'.format(date = date,
                        histo_key = source, ip_version = c.ip_version)
-
     to_return = {'source': source, 'date': date, 'top_list': []}
     ranks = h.__history_db_cache.zrevrange(histo_key, 0, limit, True)
     if ranks is None:
