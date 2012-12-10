@@ -45,8 +45,11 @@ def get_all_weights(date = None):
     if date is None:
         date = get_default_date()
     sources = daily_sources([date])
-    impacts = __config_db.mget(sources)
-    return dict(zip(sources, impacts))
+    to_return = {}
+    if len(sources) > 0:
+        impacts = __config_db.mget(sources)
+        to_return = dict(zip(sources, impacts))
+    return to_return
 
 def daily_sources(dates):
     """
