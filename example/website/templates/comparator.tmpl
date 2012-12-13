@@ -1,0 +1,47 @@
+#from master import merge_csvs
+#from templates.master import master
+#extends master
+
+
+
+#attr title = 'Comparator'
+#attr asns = None
+#attr js_comparator = None
+
+#block menu
+#end block menu
+
+#block main_content
+    List of ASNs, separated with a blank:
+    <form method="get" action="comparator">
+      <div>
+        <input type="text" name="asns" value="$asns"/>
+        <input type="submit" value="Submit"/>
+      </div>
+    </form> <br/>
+    <script type="text/javascript" src="dygraph/dygraph-combined.js"></script>
+    <div id="comparator" style="width:900px; height:600px;border: 1px solid black;"></div>
+    <script type="text/javascript">
+      g = new Dygraph(
+          document.getElementById("comparator"),
+          $merge_csvs($asns_json),
+          {
+            axes: {
+                    y:{
+                        valueFormatter: function(y) {
+                            return y.toPrecision(8);
+                            },
+                        axisLabelFormatter: function(y) {
+                            return y.toPrecision(3);
+                            },
+                       }
+                  },
+            legend: 'always',
+            rollPeriod: 30,
+            showRoller: true,
+            logscale : true,
+            yAxisLabelWidth: 50,
+            xAxisLabelWidth: 60
+            });
+    </script>
+#end block main_content
