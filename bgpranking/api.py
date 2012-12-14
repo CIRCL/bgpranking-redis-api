@@ -6,15 +6,15 @@
 """
 
 import IPy
-#import datetime
 
 from . import helper_global as h
 from . import constraints as c
 
 __owner_cache = {}
 
-def get_daily_rank_multiple_asns(asns, date, source):
+def __get_daily_rank_multiple_asns(asns, date, source):
     """
+        NOTE: Useless ?
         Get the ranks of a list of ASNs for one day and one source.
 
         :param asns: list of ASNs
@@ -85,6 +85,8 @@ def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
                 is True.
     """
     to_return = {}
+    if with_details_sources is None:
+        with_details_sources = False
     if not h.asn_exists(asn):
         return to_return
     string = '{asn}|{date}|{source}|rankv{ip_version}'
@@ -154,6 +156,8 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
                 is True.
     """
     asns_keys = []
+    if with_details_sources is None:
+        with_details_sources = False
     # prepare the keys to get all the asns by date and source
     for date, sources in dates_sources.iteritems():
         asns_keys.extend(['{date}|{source}|asns'.format(date = date,
@@ -455,6 +459,8 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
 
                     [asn, date, source, rank]
     """
+    if source is None:
+        source = 'global'
     if date is None:
         date = h.get_default_date()
     histo_key = '{date}|{source}|rankv{ip_version}'.format(
@@ -499,6 +505,10 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
         source = 'global'
     if date is None:
         date = h.get_default_date()
+    if limit is None:
+        limit = 50
+    if with_sources is None:
+        with_sources = True
     histo_key = '{date}|{histo_key}|rankv{ip_version}'.format(date = date,
                        histo_key = source, ip_version = c.ip_version)
     to_return = {'source': source, 'date': date, 'top_list': []}

@@ -2,3 +2,4 @@
 *.csv
 *.js
 build/
+example/csv/csv/

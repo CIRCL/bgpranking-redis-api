@@ -8,10 +8,7 @@
 
 """
 
-import datetime
 import bgpranking
-from graph_generator import GraphGenerator
-import json
 
 def prepare_index(source, date, limit=50):
     response = bgpranking.cache_get_top_asns(source, date, limit)
