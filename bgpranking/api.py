@@ -110,6 +110,22 @@ def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
             i += 1
     return to_return
 
+def existing_asns_timeframe(dates_sources):
+    """
+        Get all the ASNs seen in the lists on a timeframe.
+    """
+    asns_keys = []
+    for date, sources in dates_sources.iteritems():
+        asns_keys.extend(['{date}|{source}|asns'.format(date = date,
+            source = source) for source in sources])
+    # get it
+    p = h.__global_db.pipeline(False)
+    [p.smembers(k) for k in asns_keys]
+    asns_list = p.execute()
+    return set.union(*asns_list)
+
+
+
 def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
     """
         Get all ranks for all the ASNs on a timeframe.
@@ -155,18 +171,7 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
                 The details key is only present if ``with_details_sources``
                 is True.
     """
-    asns_keys = []
-    if with_details_sources is None:
-        with_details_sources = False
-    # prepare the keys to get all the asns by date and source
-    for date, sources in dates_sources.iteritems():
-        asns_keys.extend(['{date}|{source}|asns'.format(date = date,
-            source = source) for source in sources])
-    # get it
-    p = h.__global_db.pipeline(False)
-    [p.smembers(k) for k in asns_keys]
-    asns_list = p.execute()
-    asns = set.union(*asns_list)
+    asns = existing_asns_timeframe(dates_sources)
     to_return = {}
     for asn in asns:
         details = get_all_ranks_single_asn(asn, dates_sources,
