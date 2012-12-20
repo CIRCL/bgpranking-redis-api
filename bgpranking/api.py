@@ -118,13 +118,10 @@ def existing_asns_timeframe(dates_sources):
     for date, sources in dates_sources.iteritems():
         asns_keys.extend(['{date}|{source}|asns'.format(date = date,
             source = source) for source in sources])
-    # get it
     p = h.__global_db.pipeline(False)
     [p.smembers(k) for k in asns_keys]
     asns_list = p.execute()
     return set.union(*asns_list)
-
-
 
 def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
     """
