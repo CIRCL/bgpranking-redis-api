@@ -140,6 +140,13 @@ class Master(object):
             template.asns_json = json.dumps([0])
         return str(template)
 
+    @cherrypy.expose
+    def trend(self):
+        """
+            Print the trend World vs Luxembourg
+        """
+        return str(self.__init_template('trend'))
+
 def error_page_404(status, message, traceback, version):
     """
         Display an error if the page does not exists
