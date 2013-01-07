@@ -38,6 +38,14 @@ def all_ranks_all_asns():
     return json.dumps(bgpranking.get_all_ranks_all_asns(dates_sources,
         with_details_sources))
 
+@app.route('/block_owner_description', methods = ['POST'])
+def block_owner_description():
+    asn = request.json.get('asn')
+    block = request.json.get('block')
+    if asn is None or block is None:
+        return json.dumps([])
+    return json.dumps(bgpranking.get_owner(asn, block))
+
 @app.route('/asn_description', methods = ['POST'])
 def asn_description():
     asn = request.json.get('asn')
@@ -60,13 +68,6 @@ def stats():
     return json.dumps(bgpranking.get_stats(
         __default_dates_sources(request.json)))
 
-@app.route('/block_owner_description', methods = ['POST'])
-def block_owner_description():
-    asn = request.json.get('asn')
-    block = request.json.get('block')
-    if asn is None or block is None:
-        return json.dumps([])
-    return json.dumps(bgpranking.get_owner(asn, block))
 
 # need cached data
 @app.route('/cached_dates', methods = ['POST'])
