@@ -42,7 +42,8 @@ def __get_daily_rank_multiple_asns(asns, date, source):
         return []
     return list(zip(asns, h.__history_db.mget(to_get)))
 
-def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
+def get_all_ranks_single_asn(asn, dates_sources,
+        with_details_sources=False):
     """
         Get all the ranks on a timeframe for a single ASN.
 
@@ -81,9 +82,9 @@ def get_all_ranks_single_asn(asn, dates_sources, with_details_sources=False):
                         ...
                     }
 
-                The details key is only present if ``with_details_sources``
-                is True.
-    """
+                The details key is only present if
+                ``with_details_sources`` is True.
+        """
     to_return = {}
     if with_details_sources is None:
         with_details_sources = False
@@ -165,8 +166,8 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
                         ...
                     }
 
-                The details key is only present if ``with_details_sources``
-                is True.
+                The details key is only present if
+                ``with_details_sources`` is True.
     """
     asns = existing_asns_timeframe(dates_sources)
     to_return = {}
@@ -206,15 +207,16 @@ def get_owner(asn, block):
     owner = None
     for ts, temp_block in __owner_cache[asn]:
         if temp_block==block:
-            owner = h.__global_db.get('{asn}|{t}|owner'.format(asn = asn,
-                t = ts))
+            owner = h.__global_db.get(
+                    '{asn}|{t}|owner'.format(asn = asn, t = ts))
             break
     return [asn, block, owner]
 
 
 def get_asn_descs(asn, date = None, sources = None):
     """
-        Get all what is available in the database about an ASN for one day
+        Get all what is available in the database about an ASN for
+        one day
 
         :param asn: Autonomous System Number
         :param date: Date of the information (default: last ranked day)
@@ -266,6 +268,8 @@ def get_asn_descs(asn, date = None, sources = None):
     if sources is None:
         sources = list(day_sources)
     else:
+        if type(sources) is not type([]):
+            sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
     to_return = {'date': date, 'sources': sources, 'asn': asn, asn: {}}
     for timestamp in h.__global_db.smembers(asn):
@@ -273,7 +277,8 @@ def get_asn_descs(asn, date = None, sources = None):
         asn_timestamp_key = '{asn}|{timestamp}|'.format(asn = asn,
                                 timestamp = timestamp)
         p = h.__global_db.pipeline(False)
-        [p.scard('{asn_ts}{date}|{source}'.format(asn_ts=asn_timestamp_key,
+        [p.scard(
+            '{asn_ts}{date}|{source}'.format(asn_ts=asn_timestamp_key,
             date = date, source=source)) for source in sources]
         ips_by_sources = p.execute()
         nb_of_ips = sum(ips_by_sources)
@@ -348,6 +353,8 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
     if sources is None:
         sources = list(day_sources)
     else:
+        if type(sources) is not type([]):
+            sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
 
     asn_timestamp_key = '{asn}|{timestamp}|{date}|'.format(asn = asn,
