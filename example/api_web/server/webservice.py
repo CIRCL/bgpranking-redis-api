@@ -8,6 +8,10 @@ import bgpranking
 app = Flask(__name__)
 app.debug = True
 
+authorized_methods = ['all_ranks_single_asn', 'all_ranks_all_asns',
+        'block_owner_description', 'asn_description', 'ips_description',
+        'stats', 'cached_dates', 'cached_daily_rank', 'cached_top_asns']
+
 class SetEncoder(json.JSONEncoder):
     def default(self, obj):
         if type(obj) == type(set()):
@@ -22,78 +26,84 @@ def __default_dates_sources(req):
                          req.get('timeframe'))
     return dates_sources
 
-@app.route('/all_ranks_single_asn', methods = ['POST'])
-def all_ranks_single_asn():
-    asn = request.json.get('asn')
+@app.route('/json', methods = ['POST'])
+def entry_point():
+    method = request.json.get('method')
+    if method is None:
+        # wrong query
+        return json.dumps({})
+    if method not in authorized_methods:
+        # unauthorized query
+        return json.dumps({})
+    fct = globals().get(method)
+    if fct is None:
+        # unknown method
+        return json.dumps({})
+    return fct(request.json)
+
+def all_ranks_single_asn(request):
+    asn = request.get('asn')
     if asn is None:
         return json.dumps({})
-    dates_sources = __default_dates_sources(request.json)
+    dates_sources = __default_dates_sources(request)
     return json.dumps(bgpranking.get_all_ranks_single_asn(asn,
-        dates_sources, request.json.get('with_details_sources')))
+        dates_sources, request.get('with_details_sources')))
 
-@app.route('/all_ranks_all_asns', methods = ['POST'])
-def all_ranks_all_asns():
-    dates_sources = __default_dates_sources(request.json)
-    with_details_sources = request.json.get('with_details_sources')
+def all_ranks_all_asns(request):
+    dates_sources = __default_dates_sources(request)
+    with_details_sources = request.get('with_details_sources')
     return json.dumps(bgpranking.get_all_ranks_all_asns(dates_sources,
         with_details_sources))
 
-@app.route('/block_owner_description', methods = ['POST'])
-def block_owner_description():
-    asn = request.json.get('asn')
-    block = request.json.get('block')
+def block_owner_description(request):
+    asn = request.get('asn')
+    block = request.get('block')
     if asn is None or block is None:
         return json.dumps([])
     return json.dumps(bgpranking.get_owner(asn, block))
 
-@app.route('/asn_description', methods = ['POST'])
-def asn_description():
-    asn = request.json.get('asn')
+def asn_description(request):
+    asn = request.get('asn')
     if asn is None:
         return json.dumps({})
     return json.dumps(bgpranking.get_asn_descs(asn,
-        request.json.get('date'), request.json.get('sources')))
+        request.get('date'), request.get('sources')))
 
-@app.route('/ips_description', methods = ['POST'])
-def ips_description():
-    asn = request.json.get('asn')
-    asn_timestamp = request.json.get('asn_timestamp')
+def ips_description(request):
+    asn = request.get('asn')
+    asn_timestamp = request.get('asn_timestamp')
     if asn is None or asn_timestamp is None:
         return json.dumps({})
     return json.dumps(bgpranking.get_ips_descs(asn, asn_timestamp,
-        request.json.get('date'), request.json.get('sources')))
+        request.get('date'), request.get('sources')))
 
-@app.route('/stats', methods = ['POST'])
-def stats():
+def stats(request):
     return json.dumps(bgpranking.get_stats(
-        __default_dates_sources(request.json)))
+        __default_dates_sources(request)))
 
 
 # need cached data
-@app.route('/cached_dates', methods = ['POST'])
-def cached_dates():
+def cached_dates(request):
     return json.dumps(bgpranking.cache_get_dates())
 
-@app.route('/cached_daily_rank', methods = ['POST'])
-def cached_daily_rank():
-    asn = request.json.get('asn')
+def cached_daily_rank(request):
+    asn = request.get('asn')
     if asn is None:
         return json.dumps({})
     cached_dates = bgpranking.cache_get_dates()
-    date = request.json.get('date')
+    date = request.get('date')
     if date is None or date in cached_dates:
         return json.dumps(bgpranking.cache_get_daily_rank(asn,
-            request.json.get('sources'), date))
+            request.get('sources'), date))
     return json.dumps({})
 
-@app.route('/cached_top_asns', methods = ['POST'])
-def cached_top_asns():
+def cached_top_asns(request):
     cached_dates = bgpranking.cache_get_dates()
-    date = request.json.get('date')
+    date = request.get('date')
     if date is None or date in cached_dates:
         return json.dumps(bgpranking.cache_get_top_asns(
-            request.json.get('source'), date, request.json.get('limit'),
-            request.json.get('with_sources')),
+            request.get('source'), date, request.get('limit'),
+            request.get('with_sources')),
             cls=SetEncoder)
     return json.dumps({})
 
