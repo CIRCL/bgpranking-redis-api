@@ -1,0 +1,39 @@
+#from templates.master import master
+#extends master
+
+#attr title = 'Maps'
+
+#block menu
+#end block menu
+
+#block main_content
+
+  <link rel="stylesheet" href="jvectormap/jquery-jvectormap.css" type="text/css" media="screen"/>
+  <script src="jvectormap/jquery.js"></script>
+  <script src="jvectormap/jquery-jvectormap.js"></script>
+  <script src="jvectormap/jquery-jvectormap-world-mill-en.js"></script>
+
+  <script src="world_map/ranks.js"></script>
+
+  <div id="world-map" style="width: 1200px; height: 800px"></div>
+  <script>
+    $(function(){
+      $('#world-map').vectorMap(
+        {
+          map: 'world_mill_en',
+          series: {
+            regions: [{
+              values: ranks,
+              scale: ['#C8EEFF', '#0071A4'],
+              normalizeFunction: 'polynomial'
+            }]
+          },
+          onLabelShow: function(e, el, code){
+            el.html(el.html()+' (GDP - '+gdpData[code]+')');
+          }
+        }
+      );
+    });
+  </script>
+
+#end block main_content

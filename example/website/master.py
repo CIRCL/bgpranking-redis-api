@@ -147,6 +147,13 @@ class Master(object):
         """
         return str(self.__init_template('trend'))
 
+    @cherrypy.expose
+    def map(self):
+        """
+            Print the worldmap
+        """
+        return str(self.__init_template('map'))
+
 def error_page_404(status, message, traceback, version):
     """
         Display an error if the page does not exists

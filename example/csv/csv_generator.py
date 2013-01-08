@@ -13,7 +13,7 @@ import bgpranking
 directory = 'csv'
 agg_directory = 'aggregated'
 
-def prepare_all_csv(interval = 365):
+def prepare_all_csv(interval = 730):
     """
         Make CSV files for all the ASNs ranked during the interval.
     """
