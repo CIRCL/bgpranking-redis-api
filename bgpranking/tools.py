@@ -3,27 +3,25 @@
 
 from csv import writer
 import os
-import shutil
 import glob
 from csv import DictReader, DictWriter
 from socket import socket, AF_INET, SOCK_STREAM
 import json
 
-from . import api as bgpranking
+import bgpranking
 
 def prepare_all_csv(output_csv_dir, interval = 1000, force = False):
     """
         Make CSV files for all the ASNs ranked during the interval.
     """
     keepdir_path = os.path.join(output_csv_dir, '.is_csv_dir')
-    if os.path.exists(output_csv_dir):
-        if force or os.path.exists(keepdir_path):
-            shutil.rmtree(output_csv_dir)
-        else:
-            print('Wrong dir.')
-            exit()
-    os.mkdir(output_csv_dir)
-    open(keepdir_path, 'w').close()
+    if not os.path.exists(output_csv_dir):
+        os.mkdir(output_csv_dir)
+    if force:
+        open(keepdir_path, 'w').close()
+    if not os.path.exists(keepdir_path):
+         print('Wrong dir.')
+         exit()
     dates_sources = bgpranking.prepare_sources_by_dates(None, interval)
     asns = bgpranking.existing_asns_timeframe(dates_sources)
     for asn in asns:
