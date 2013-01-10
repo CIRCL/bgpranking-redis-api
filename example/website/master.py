@@ -19,6 +19,9 @@ import json
 import master_controler
 
 def merge_csvs(asns):
+    url = 'http://{host}:{port}/csv/'.format(
+            host = cherrypy.config.get('server.socket_host'),
+            port = cherrypy.config.get('server.socket_port'))
     asns = json.loads(asns)
     if asns[0] == 0:
         return json.dumps('')
@@ -26,7 +29,7 @@ def merge_csvs(asns):
     no_entries = []
     for asn in asns:
         try:
-            f = urllib2.urlopen('http://127.0.0.1:8080/csv/' + asn)
+            f = urllib2.urlopen(url + asn)
             for line in DictReader(f):
                 date = line['day']
                 rank = line['rank']

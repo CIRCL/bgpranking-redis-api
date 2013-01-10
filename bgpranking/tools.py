@@ -50,16 +50,18 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, **kwargs):
         with open(csv_file, 'r') as f:
             reader = DictReader(f)
             for entry in reader:
+                # Removing 1 because we aggregate data
+                rank = float(entry['rank']) -1
                 if result.get(entry['day']) is None:
                     result[entry['day']] = {}
                 if result[entry['day']].get('world') is None:
                     result[entry['day']]['world'] = 0
-                result[entry['day']]['world'] += float(entry['rank'])
+                result[entry['day']]['world'] += rank
                 for key, arg in kwargs.iteritems():
                     if asn in arg:
                         if result[entry['day']].get(key) is None:
                             result[entry['day']][key] = 0
-                        result[entry['day']][key] += float(entry['rank'])
+                        result[entry['day']][key] += rank
     fieldnames = ['world'] + kwargs.keys()
     filename = os.path.join(output_agg_dir, '_'.join(fieldnames))
     with open(filename, 'w') as f:

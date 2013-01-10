@@ -35,7 +35,8 @@ def get_as_infos(asn, date = None, sources = None):
     to_return = []
     for key, entry in response[asn].iteritems():
         if key == 'clean_blocks':
-            to_return.append([entry[0], entry[2], entry[1], 0, '', 0])
+            to_return += [ [timestamp, owner, block, 0, '', 0]
+                for timestamp, block, owner in entry]
         elif key == 'old_blocks':
             pass
         else:
