@@ -35,7 +35,7 @@ def prepare_all_csv(output_csv_dir, interval = 1000, force = False):
             for date, entry in ranks.iteritems():
                 w.writerow([date, 1 + entry['total']])
 
-def aggregate_csvs(output_csv_dir, agg_dir, **kwargs):
+def aggregate_csvs(output_csv_dir, output_agg_dir, **kwargs):
     """
         Aggregate lists of ASNs in a single CSV file.
 
@@ -63,7 +63,7 @@ def aggregate_csvs(output_csv_dir, agg_dir, **kwargs):
                             result[entry['day']][key] = 0
                         result[entry['day']][key] += float(entry['rank'])
     fieldnames = ['world'] + kwargs.keys()
-    filename = os.path.join(agg_dir, '_'.join(fieldnames))
+    filename = os.path.join(output_agg_dir, '_'.join(fieldnames))
     with open(filename, 'w') as f:
         w = DictWriter(f, fieldnames= ['date'] + fieldnames)
         w.writeheader()
@@ -95,7 +95,7 @@ def get_asns_country_code(asns):
         to_return[asn] = cc
     return to_return
 
-def generate_js_for_worldmap(output_file):
+def generate_js_for_worldmap(output_dir):
     ranks = bgpranking.cache_get_top_asns(limit = -1, with_sources = False)
     if ranks.get('top_list') is not None:
         info = get_asns_country_code([asn for asn, rank in ranks.get('top_list')])
@@ -106,7 +106,7 @@ def generate_js_for_worldmap(output_file):
                 to_dump[cc] = 0
             to_dump[cc] += rank
 
-        f = open(output_file, "w")
+        f = open(os.path.join(output_dir, 'worldmap.js'), "w")
         f.write("var ranks =\n" + json.dumps(to_dump))
         f.close()
 
