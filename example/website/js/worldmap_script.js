@@ -5,7 +5,7 @@ $(function(){
       series: {
         regions: [{
           values: ranks,
-          scale: ['#C8EEFF', '#0071A4'],
+          scale: ['#00FF00', '#FFFF00', '#ff0000'],
           normalizeFunction: 'polynomial'
         }]
       },
