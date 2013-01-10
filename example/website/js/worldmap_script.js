@@ -10,7 +10,7 @@ $(function(){
         }]
       },
       onLabelShow: function(e, el, code){
-        el.html(el.html()+' (GDP - '+gdpData[code]+')');
+        el.html(el.html()+' (GDP - ' + ranks[code]+')');
       }
     }
   );
