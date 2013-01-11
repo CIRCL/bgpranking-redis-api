@@ -9,8 +9,8 @@ $(function(){
           normalizeFunction: 'polynomial'
         }]
       },
-      onLabelShow: function(e, el, code){
-        el.html(el.html()+' (GDP - ' + ranks[code]+')');
+      onRegionLabelShow: function(e, el, code){
+        el.html(el.html()+' ('+ranks[code]+')');
       }
     }
   );

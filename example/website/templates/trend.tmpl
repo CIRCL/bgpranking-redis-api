@@ -19,36 +19,7 @@
 </ul>
 </p>
 <div id="graphdiv1" style="width:1280px; height:768px;border: 1px solid black;"></div>
-<script type="text/javascript">
-  g = new Dygraph(
-      document.getElementById("graphdiv1"),
-      "csv_agg/world_luxembourg",
-      {
-        labels: ['date', 'World', 'Luxembourg'],
-        'Luxembourg': { axis: {} },
-        axes: {
-                y:{
-                  },
-                y2: {
-                    valueFormatter: function(y) {
-                        return y.toPrecision(8);
-                        },
-                    axisLabelFormatter: function(y) {
-                        return y.toPrecision(5);
-                        },
-                   }
-              },
-        legend: 'always',
-        fillGraph: true,
-        rollPeriod: 30,
-        showRoller: true,
-        logscale : true,
-        ylabel: 'World Trend',
-        y2label: 'Luxembourg Trend',
-        yAxisLabelWidth: 50,
-        xAxisLabelWidth: 60
-        });
-</script>
+<script type="text/javascript" src="js/world_luxembourg.js"></script>
 
 #end block main_content
 
