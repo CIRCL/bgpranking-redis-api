@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
     name='bgpranking',
-    version='0.1',
+    version='1.0',
     description='API to access the Redis database of a BGP Ranking instance.',
     url='https://github.com/Rafiot/bgpranking-py.git',
     author='Raphaël Vinot',

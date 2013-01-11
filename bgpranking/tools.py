@@ -10,7 +10,7 @@ import json
 
 import bgpranking
 
-def prepare_all_csv(output_csv_dir, interval = 1000, force = False):
+def prepare_all_csv(output_csv_dir, interval = 400, force = False):
     """
         Make CSV files for all the ASNs ranked during the interval.
     """
