@@ -20,6 +20,6 @@ while True:
 
     tools.aggregate_csvs(csv_dir, agg_csv_dir, **{'luxembourg': lu_asns})
 
-    tools.generate_js_for_worldmap(js_dir)
+    tools.generate_js_for_worldmap(js_dir, agg_csv_dir)
 
     time.sleep(10000)
