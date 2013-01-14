@@ -138,9 +138,12 @@ class Master(object):
         template = self.__init_template('comparator')
         template.asns = asns
         if asns is not None:
-            template.asns_json = json.dumps(asns.split())
+            asns_list, details_list = master_controler.get_comparator_metatada(asns)
+            template.asns_json = json.dumps(asns_list)
+            template.asns_details = details_list
         else:
             template.asns_json = json.dumps([0])
+            template.asns_details = ['', []]
         return str(template)
 
     @cherrypy.expose

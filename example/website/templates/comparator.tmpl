@@ -42,4 +42,17 @@
             xAxisLabelWidth: 60
             });
     </script>
+    <ul>
+      #for asn, details in $asns_details
+        <li>$asn
+          <ul>
+            #for block, description in $details
+              <li>$block: description</li>
+            #end for
+          </ul>
+        </li>
+      #end for
+    </ul>
+
+
 #end block main_content

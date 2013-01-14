@@ -28,6 +28,15 @@ def get_last_month_sources():
     dates_sources = bgpranking.prepare_sources_by_dates(timeframe = 30)
     return bgpranking.last_seen_sources(dates_sources)
 
+def get_comparator_metatada(asns_string):
+    splitted_asns = asns_string.split()
+    if type(splitted_asns) == type(str):
+        splitted_asns = [splitted_asns]
+    details_list = []
+    for asn in splitted_asns:
+        details_list.append(bgpranking.get_all_block_descriptions(asn))
+    return splitted_asns, details_list
+
 def get_as_infos(asn, date = None, sources = None):
     response = bgpranking.get_asn_descs(asn, date, sources)
     if response is None or response.get(asn) is None:

@@ -180,6 +180,28 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
             to_return[date][asn] = entries
     return to_return
 
+def get_all_block_descriptions(asn):
+    """
+        Get all the blocks and descriptions on an ASN available in the database
+
+        :param asn: Autonomous System Number
+        :rtype: List
+
+            .. note:: Format of the list:
+
+                .. code-block:: python
+
+                    [asn, [(block, description), ...]]
+    """
+    timestamps = h.__global_db.smembers(asn)
+    block_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
+            for t in timestamps]
+    descr_keys = ['{asn}|{t}|owner'.format(asn = asn, t = t)
+            for t in timestamps]
+    blocks = h.__global_db.mget(block_keys)
+    descrs = h.__global_db.mget(descr_keys)
+    return asn, zip(blocks, descrs)
+
 def get_owner(asn, block):
     """
         Get the description of the ASN (usually the owner name).
