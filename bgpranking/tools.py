@@ -7,6 +7,7 @@ import glob
 from csv import DictReader, DictWriter
 from socket import socket, AF_INET, SOCK_STREAM
 import json
+import operator
 
 import bgpranking
 
@@ -110,7 +111,8 @@ def generate_dumps_for_worldmap(output_dir_js = None, output_dir_csv = None):
             f.write("var ranks =\n" + json.dumps(to_dump))
             f.close()
         if output_dir_csv is not None:
-            for_csv = sorted(to_dump, key=lambda x: to_dump[x], reverse=True)
+            for_csv = sorted(to_dump.iteritems(), key=operator.itemgetter(1),
+                    reverse=True)
             with open(os.path.join(output_dir_csv, 'worldmap.csv'), "w") as f:
                 w = DictWriter(f, fieldnames= ['country', 'rank'])
                 w.writeheader()
