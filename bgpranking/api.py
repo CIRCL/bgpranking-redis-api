@@ -194,13 +194,16 @@ def get_all_block_descriptions(asn):
                     [asn, [(block, description), ...]]
     """
     timestamps = h.__global_db.smembers(asn)
-    block_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
-            for t in timestamps]
-    descr_keys = ['{asn}|{t}|owner'.format(asn = asn, t = t)
-            for t in timestamps]
-    blocks = h.__global_db.mget(block_keys)
-    descrs = h.__global_db.mget(descr_keys)
-    return asn, zip(blocks, descrs)
+    if len(timestamps) > 0:
+        block_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
+                for t in timestamps]
+        descr_keys = ['{asn}|{t}|owner'.format(asn = asn, t = t)
+                for t in timestamps]
+        blocks = h.__global_db.mget(block_keys)
+        descrs = h.__global_db.mget(descr_keys)
+        return asn, zip(blocks, descrs)
+    else:
+        return asn, []
 
 def get_owner(asn, block):
     """

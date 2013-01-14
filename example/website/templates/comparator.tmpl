@@ -43,15 +43,17 @@
             });
     </script>
     <ul>
-      #for asn, details in $asns_details
-        <li>$asn
-          <ul>
-            #for block, description in $details
-              <li>$block: description</li>
-            #end for
-          </ul>
-        </li>
-      #end for
+      #if $asns_details is not None
+        #for asn, details in $asns_details
+          <li>$asn
+            <ul>
+              #for block, description in $details
+                <li>$block: $description</li>
+              #end for
+            </ul>
+          </li>
+        #end for
+      #end if
     </ul>
 
 

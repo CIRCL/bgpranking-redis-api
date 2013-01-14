@@ -143,7 +143,7 @@ class Master(object):
             template.asns_details = details_list
         else:
             template.asns_json = json.dumps([0])
-            template.asns_details = ['', []]
+            template.asns_details = None
         return str(template)
 
     @cherrypy.expose
