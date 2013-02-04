@@ -55,8 +55,8 @@ def get_last_seen_sources(asn, dates_sources):
     for date in s_dates:
         sources = dates_sources[date]
         if len(sources) > 0:
-            p.exists([string.format(asn=asn, date=date, source=source,
-                ip_version = c.ip_version) for source in sources])
+            [p.exists(string.format(asn=asn, date=date, source=source,
+                ip_version = c.ip_version)) for source in sources]
     asns_found = p.execute()
     i = 0
     to_return = {}
@@ -66,7 +66,7 @@ def get_last_seen_sources(asn, dates_sources):
             for source in sources:
                 if to_return.get(source) is None and asns_found[i]:
                     to_return[source] = date
-            i += 1
+                i += 1
     return to_return
 
 def get_all_ranks_single_asn(asn, dates_sources,
