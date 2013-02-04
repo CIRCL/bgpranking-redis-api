@@ -118,7 +118,7 @@ class Master(object):
             as_infos = master_controler.get_as_infos(asn, source, date)
             if as_infos is not None and len(as_infos) > 0:
                 template.asn_descs = as_infos
-                template.current_sources = master_controler.get_last_month_sources()
+                template.current_sources = master_controler.get_last_seen_sources(asn)
                 if len(template.current_sources.keys()) > 0:
                     template.sources = template.current_sources.keys()
                 if ip_details is not None:

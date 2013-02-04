@@ -42,6 +42,33 @@ def __get_daily_rank_multiple_asns(asns, date, source):
         return []
     return list(zip(asns, h.__history_db.mget(to_get)))
 
+def get_last_seen_sources(asn, dates_sources):
+    """
+    """
+    to_return = {}
+    if not h.asn_exists(asn):
+        return to_return
+    string = '{asn}|{date}|{source}|rankv{ip_version}'
+    s_dates = dates_sources.keys()
+    s_dates.sort(reverse=True)
+    p = h.__history_db.pipeline()
+    for date in s_dates:
+        sources = dates_sources[date]
+        if len(sources) > 0:
+            p.exists([string.format(asn=asn, date=date, source=source,
+                ip_version = c.ip_version) for source in sources])
+    asns_found = p.execute()
+    i = 0
+    to_return = {}
+    for date in s_dates:
+        sources = dates_sources[date]
+        if len(sources) > 0:
+            for source in sources:
+                if to_return.get(source) is None and asns_found[i]:
+                    to_return[source] = date
+            i += 1
+    return to_return
+
 def get_all_ranks_single_asn(asn, dates_sources,
         with_details_sources=False):
     """

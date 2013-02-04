@@ -24,9 +24,9 @@ def get_sources(date):
 def get_dates():
     return bgpranking.cache_get_dates()
 
-def get_last_month_sources():
+def get_last_seen_sources(asn):
     dates_sources = bgpranking.prepare_sources_by_dates(timeframe = 30)
-    return bgpranking.last_seen_sources(dates_sources)
+    return bgpranking.get_last_seen_sources(asn, dates_sources)
 
 def get_comparator_metatada(asns_string):
     splitted_asns = asns_string.split()
