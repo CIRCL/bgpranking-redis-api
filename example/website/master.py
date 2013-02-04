@@ -124,7 +124,7 @@ class Master(object):
                 if ip_details is not None:
                     template.ip_details = ip_details
                     template.ip_descs = master_controler.get_ip_info(asn,
-                            ip_details, source, date)
+                            ip_details, date, source)
         else:
             template.error = "Invalid query: " +  asn
         return str(template)
