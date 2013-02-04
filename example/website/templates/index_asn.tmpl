@@ -41,12 +41,14 @@
                 <th scope="col" >Source(s)</th>
             </tr>
         </thead>
-        #for $history in $histories
-        <tr>
-            <td><a href="/asn_details?date=${date};source=${source};asn=${history[0]}">${history[0]}</a></td>
-            <td>$history[1]</td>
-            <td>$history[2]</td>
-        </tr>
-        #end for
+        #if $histories is not None
+          #for $history in $histories
+          <tr>
+              <td><a href="/asn_details?date=${date};source=${source};asn=${history[0]}">${history[0]}</a></td>
+              <td>$history[1]</td>
+              <td>$history[2]</td>
+          </tr>
+          #end for
+        #end if
     </table>
 #end block main_content
