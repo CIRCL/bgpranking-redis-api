@@ -88,12 +88,11 @@ class Master(object):
         return str(self.index())
 
     @cherrypy.expose
-    def index(self, source = None, asn = None, date = None):
+    def index(self, source = None, date = None):
         """
             Generate the view of the global ranking
         """
         source = self.__none_if_empty(source)
-        asn = self.__none_if_empty(asn)
         date = self.__none_if_empty(date)
         histo = master_controler.prepare_index(source, date)
         template = self.__init_template('index_asn', source, date)
@@ -109,7 +108,7 @@ class Master(object):
         source = self.__none_if_empty(source)
         date = self.__none_if_empty(date)
         if asn is None:
-            return self.index(source, asn, date)
+            return self.index(source, date)
         ip_details = self.__none_if_empty(ip_details)
         template = self.__init_template('asn_details', source, date)
         asn = asn.lstrip('AS')
