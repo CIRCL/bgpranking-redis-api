@@ -13,7 +13,7 @@ url = 'http://bgpranking.circl.lu/json'
 def __prepare_request(query):
     headers = {'content-type': 'application/json'}
     r = requests.post(url, data=json.dumps(query), headers=headers)
-    return r.json
+    return r.json()
 
 def all_ranks_single_asn(asn, last_day = None, timeframe = None,
         dates_sources = None, with_details_sources = None):
