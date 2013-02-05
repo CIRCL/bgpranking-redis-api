@@ -12,11 +12,14 @@ import cherrypy
 from Cheetah.Template import Template
 import ConfigParser
 import cgi
+import csv
+import StringIO
 from csv import DictReader
 import urllib2
 import json
 
 import master_controler
+from pubsublogger import publisher
 
 def merge_csvs(asns):
     url = 'http://{host}:{port}/csv/'.format(
@@ -54,6 +57,7 @@ class Master(object):
 
     def __init__(self):
         self.dir_templates = 'templates'
+        publisher.channel = 'Website'
 
     def __none_if_empty(self, to_check = None):
         """
@@ -80,6 +84,17 @@ class Master(object):
         template.date = date
         return template
 
+    def __csv2string(self, data):
+        si = StringIO.StringIO();
+        cw = csv.writer(si);
+        cw.writerow(data);
+        return si.getvalue().strip('\r\n');
+
+    def __query_logging(self, ip, user_agent, webpage, date=None,
+            source=None, asn=None, asn_details=None, compared_asns = None):
+        publisher.info(self.__csv2string([ip, user_agent, webpage, date,
+                source, asn, asn_details, compared_asns]))
+
     @cherrypy.expose
     def default(self):
         """
@@ -94,6 +109,9 @@ class Master(object):
         """
         source = self.__none_if_empty(source)
         date = self.__none_if_empty(date)
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='index',
+            date=date, source=source)
         histo = master_controler.prepare_index(source, date)
         template = self.__init_template('index_asn', source, date)
         template.histories = histo
@@ -109,6 +127,9 @@ class Master(object):
         date = self.__none_if_empty(date)
         if asn is None:
             return self.index(source, date)
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='asn_details',
+            date=date, source=source, asn=asn, asn_details = ip_details)
         ip_details = self.__none_if_empty(ip_details)
         template = self.__init_template('asn_details', source, date)
         asn = asn.lstrip('AS')
@@ -134,6 +155,9 @@ class Master(object):
             Generate the view comparing a set of ASNs
         """
         asns = self.__none_if_empty(asns)
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='comparator',
+            compared_asns=asns)
         template = self.__init_template('comparator')
         template.asns = asns
         if asns is not None:
@@ -150,6 +174,8 @@ class Master(object):
         """
             Print the trend World vs Luxembourg
         """
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='trend')
         return str(self.__init_template('trend'))
 
     @cherrypy.expose
@@ -157,6 +183,8 @@ class Master(object):
         """
             Print the worldmap
         """
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='map')
         return str(self.__init_template('map'))
 
 def error_page_404(status, message, traceback, version):
