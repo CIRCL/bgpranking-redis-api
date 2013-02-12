@@ -8,13 +8,15 @@
 
 """
 
+import asnhistory
 import bgpranking
 
 def prepare_index(source, date, limit=50):
     response = bgpranking.cache_get_top_asns(source, date, limit)
     if len(response['top_list']) != 0:
-        return [(rank[0], 1 + rank[1], ', '.join(sources))
-                for rank, sources in response['top_list']]
+        return [(rank[0], asnhistory.get_last_description(rank[0]),
+                    1 + rank[1], ', '.join(sources))
+                        for rank, sources in response['top_list']]
 
 def get_sources(date):
     if date is None:
