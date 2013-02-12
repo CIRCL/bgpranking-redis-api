@@ -10,6 +10,8 @@ import IPy
 from . import helper_global as h
 from . import constraints as c
 
+import asnhistory
+
 __owner_cache = {}
 
 def __get_daily_rank_multiple_asns(asns, date, source):
@@ -44,6 +46,8 @@ def __get_daily_rank_multiple_asns(asns, date, source):
 
 def get_last_seen_sources(asn, dates_sources):
     """
+        Return a dictionary conteining the last date a particular ASN
+        has been seen by a source.
     """
     to_return = {}
     if not h.asn_exists(asn):
@@ -104,7 +108,8 @@ def get_all_ranks_single_asn(asn, dates_sources,
                                         (source2, rank),
                                         ...
                                     ],
-                                'total': sum_of_ranks
+                                'total': sum_of_ranks,
+                                'description': description
                             }
                         ...
                     }
@@ -131,6 +136,8 @@ def get_all_ranks_single_asn(asn, dates_sources,
             to_return[date] = {}
             if with_details_sources:
                 to_return[date].update({'details': list(zip(sources, ranks[i]))})
+            to_return[date].update(
+                    {'description': asnhistory.get_last_description(asn)})
             to_return[date].update({'total' : 0})
             for s, r in zip(sources, ranks[i]):
                 if r is not None:
@@ -186,7 +193,8 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
                                                 (source2, rank),
                                                 ...
                                             ],
-                                        'total': sum_of_ranks
+                                        'total': sum_of_ranks,
+                                        'description': description
                                     }
                                 ...
                             }
@@ -284,6 +292,7 @@ def get_asn_descs(asn, date = None, sources = None):
                             'date': date,
                             'sources': [source1, source2, ...],
                             'asn': asn,
+                            'asn_description': asn_description,
                             asn:
                                 {
                                     'clean_blocks':
@@ -323,7 +332,8 @@ def get_asn_descs(asn, date = None, sources = None):
         if type(sources) is not type([]):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
-    to_return = {'date': date, 'sources': sources, 'asn': asn, asn: {}}
+    to_return = {'date': date, 'sources': sources, 'asn': asn,
+            'asn_description': asnhistory.get_last_description(asn), asn: {}}
     for timestamp in h.__global_db.smembers(asn):
         # Get the number of IPs found in the database for each subnet
         asn_timestamp_key = '{asn}|{timestamp}|'.format(asn = asn,
@@ -389,6 +399,7 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
                         'date': date,
                         'sources': [source1, source2, ...],
                         'asn': asn,
+                        'asn_description': asn_description,
                         'timestamp': asn_timestamp
                         asn_timestamp:
                             {
@@ -418,6 +429,7 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
     ips_by_source = pipeline.execute()
     i = 0
     to_return = {'date': date, 'sources': sources, 'asn': asn,
+            'asn_description': asnhistory.get_last_description(asn),
             'timestamp': asn_timestamp, asn_timestamp: {}}
     for source in sources:
         ips = ips_by_source[i]
@@ -518,7 +530,7 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
 
                 .. code-block:: python
 
-                    [asn, date, source, rank]
+                    [asn, asn_description, date, source, rank]
     """
     if source is None:
         source = 'global'
@@ -526,7 +538,8 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
         date = h.get_default_date()
     histo_key = '{date}|{source}|rankv{ip_version}'.format(
             date = date, source = source, ip_version = c.ip_version)
-    return asn, date, source, h.__history_db_cache.zscore(histo_key, asn)
+    return asn, asnhistory.get_last_description(asn), date, source,\
+                h.__history_db_cache.zscore(histo_key, asn)
 
 def cache_get_top_asns(source = 'global', date = None, limit = 50,
         with_sources = True):
@@ -553,7 +566,10 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
                         'date': date,
                         'top_list':
                             [
-                                ((asn, rank), set([source1, source2, ...])),
+                                (
+                                    (asn, asn_description, rank),
+                                    set([source1, source2, ...])
+                                ),
                                 ...
                             ]
                     }
@@ -576,11 +592,14 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
     ranks = h.__history_db_cache.zrevrange(histo_key, 0, limit, True)
     if ranks is None:
         return to_return
+    temp_rank = []
+    for asn, rank in ranks:
+        temp_rank.append((asn, asnhistory.get_last_description(asn), rank))
     if not with_sources:
-        to_return['top_list'] = ranks
+        to_return['top_list'] = temp_rank
     else:
         p = h.__history_db_cache.pipeline(False)
-        [p.smembers('|'.join([date, rank[0]])) for rank in ranks]
-        to_return['top_list'] = list(zip(ranks, p.execute()))
+        [p.smembers('|'.join([date, rank[0]])) for rank in temp_rank]
+        to_return['top_list'] = list(zip(temp_rank, p.execute()))
     return to_return
 
