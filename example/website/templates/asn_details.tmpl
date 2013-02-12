@@ -6,6 +6,7 @@
 #attr javascript = None
 #attr asn_descs = []
 #attr current_sources = []
+#attr asn_description = None
 
 #block menu
     <form method="get" action="/asn_details">
@@ -50,7 +51,7 @@
 #end block menu
 
 #block main_content
-  if $asn_description is ntot None
+  #if $asn_description is not None
     <script type="text/javascript" src="dygraph/dygraph-combined.js"></script>
     <div id="asngraph" style="width:900px; height:600px;border: 1px solid black;"></div>
     <script type="text/javascript">
@@ -120,7 +121,7 @@
                 #end for
             </table>
         #end if
-        #end if
+    #end if
   #else
     AS $asn unknown in the database.
   #end if
