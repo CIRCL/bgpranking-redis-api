@@ -40,7 +40,7 @@ def get_comparator_metatada(asns_string):
 def get_as_infos(asn, date = None, sources = None):
     response = bgpranking.get_asn_descs(asn, date, sources)
     if response is None or response.get(asn) is None:
-        return None
+        return None, None
     to_return = []
     for key, entry in response[asn].iteritems():
         if key == 'clean_blocks':
@@ -52,7 +52,9 @@ def get_as_infos(asn, date = None, sources = None):
             to_return.append([key, entry['owner'], entry['ip_block'],
                 entry['nb_of_ips'], ', '.join(entry['sources']),
                 1 + entry['rank']])
-    return sorted(to_return, key=lambda element: (element[5], element[3]), reverse = True)
+    return response['asn_description'], \
+            sorted(to_return, key=lambda element: (element[5],
+                element[3]), reverse = True)
 
 def get_ip_info(asn, timestamp, date = None, sources = None):
     response = bgpranking.get_ips_descs(asn, timestamp, date, sources)
