@@ -1,3 +1,4 @@
+#import cgi
 #from templates.master import master
 #extends master
 
@@ -70,7 +71,7 @@
                        }
                   },
             legend: 'always',
-            title: "$asn_description",
+            title: '$cgi.escape($asn_description, True)',
             rollPeriod: 30,
             showRoller: true,
             logscale : true,
@@ -96,7 +97,7 @@
         #for $asn_desc in $asn_descs
         <tr>
             <td>$asn_desc[0]</td>
-            <td>$asn_desc[1]</td>
+            <td>$cgi.escape($asn_desc[1], True)</td>
             <td><a href="/asn_details?date=${date};source=${source};asn=${asn};ip_details=${asn_desc[0]}">$asn_desc[2]</a></td>
             <td>$asn_desc[3]</td>
             <td>$asn_desc[4]</td>
