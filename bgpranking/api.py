@@ -308,6 +308,7 @@ def get_asn_descs(asn, date = None, sources = None):
                                     asn_timestamp:
                                         {
                                             'owner': owner_description,
+                                            'old_descr': [(timestamp, description), ...]
                                             'ip_block': block,
                                             'nb_of_ips': nb,
                                             'sources': [source1, source2, ...]
@@ -334,7 +335,8 @@ def get_asn_descs(asn, date = None, sources = None):
         sources = list(day_sources.intersection(set(sources)))
     to_return = {'date': date, 'sources': sources, 'asn': asn,
             'asn_description': asnhistory.get_last_description(asn), asn: {}}
-    for timestamp in h.__global_db.smembers(asn):
+    temp_blocks = {}
+    for timestamp in sorted(h.__global_db.smembers(asn), reverse=True):
         # Get the number of IPs found in the database for each subnet
         asn_timestamp_key = '{asn}|{timestamp}|'.format(asn = asn,
                                 timestamp = timestamp)
@@ -349,6 +351,15 @@ def get_asn_descs(asn, date = None, sources = None):
         key_block = '{asn_ts}ips_block'.format(asn_ts = asn_timestamp_key)
         key_clean_set = '{asn}|{date}|clean_set'.format(asn = asn, date = date)
         owner, ip_block = h.__global_db.mget([key_owner, key_block])
+        ts = temp_blocks.get(ip_block)
+        if ts is not None:
+            if to_return[asn].get(ts) is not None:
+                if to_return[asn][ts]['old_descr'] is None:
+                    to_return[asn][ts]['old_descr'] = []
+                to_return[asn][ts]['old_descr'].append((timestamp, owner))
+            continue
+        else:
+            temp_blocks[ip_block] = timestamp
         if nb_of_ips > 0:
             impacts = h.get_all_weights(date)
             # Compute the local ranking: the ranking if this subnet is the
