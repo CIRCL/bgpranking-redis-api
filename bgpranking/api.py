@@ -357,7 +357,11 @@ def get_asn_descs(asn, date = None, sources = None):
                 if to_return[asn][ts]['old_descr'] is None:
                     to_return[asn][ts]['old_descr'] = []
                 to_return[asn][ts]['old_descr'].append((timestamp, owner))
-            continue
+            # ugly hotfix. The update of block description has to be fixed.
+            if nb_of_ips == 0:
+                continue
+            else:
+                timestamp = ts
         else:
             temp_blocks[ip_block] = timestamp
         if nb_of_ips > 0:
