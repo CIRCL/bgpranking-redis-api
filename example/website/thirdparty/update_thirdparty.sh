@@ -2,6 +2,9 @@
 
 set -e
 
+git add .
+git commit -m 'Update'
+
 wget http://dygraphs.com/dygraph-combined.js -O dygraph/dygraph-combined.js
 
 JVECTORMAP_VERSION='1.2.2'
@@ -20,5 +23,10 @@ rm -rf temp
 wget http://jvectormap.com/js/jquery-jvectormap-world-mill-en.js \
     -O jvectormap/jquery-jvectormap-world-mill-en.js
 
-JQUERY_VERSION='1.9.0'
+JQUERY_VERSION='1.9.1'
 wget http://code.jquery.com/jquery-${JQUERY_VERSION}.min.js -O jvectormap/jquery.js
+
+git add .
+git commit -m 'Update'
+
+
