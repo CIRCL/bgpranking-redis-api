@@ -18,7 +18,7 @@ g = new Dygraph(
             },
       legend: 'always',
       fillGraph: true,
-      rollPeriod: 30,
+      rollPeriod: 7,
       showRoller: true,
       logscale : true,
       ylabel: 'World Trend',
