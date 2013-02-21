@@ -15,7 +15,7 @@ if __name__ == '__main__':
     if date is None:
         date = bgpranking.get_default_date()
 
-    dates_sources = bgpranking.get_sources(date)
+    dates_sources = bgpranking.prepare_sources_by_dates(date, 1)
 
     asns = bgpranking.existing_asns_timeframe(dates_sources)
     with open(date, 'w') as f:
