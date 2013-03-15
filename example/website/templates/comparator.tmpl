@@ -45,7 +45,8 @@
     <ul>
       #if $asns_details is not None
         #for asn, details in $asns_details
-          <li><a href="csv/$asn" type="text/comma-separated-values">$asn</a>
+          <li><a href="asn_details?asn=$asn">$asn</a>
+            (<a href="csv/$asn" type="text/comma-separated-values">csv</a>)
             <ul>
               #for block, description in $details
                 <li>$block: $description</li>
