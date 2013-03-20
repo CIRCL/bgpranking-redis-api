@@ -99,7 +99,8 @@ def get_asns_country_code(asns):
 def generate_dumps_for_worldmap(output_dir_js = None, output_dir_csv = None):
     ranks = bgpranking.cache_get_top_asns(limit = -1, with_sources = False)
     if ranks.get('top_list') is not None:
-        info = get_asns_country_code([asn for asn, rank in ranks.get('top_list')])
+        info = get_asns_country_code([asn for asn, description, rank
+            in ranks.get('top_list')])
         to_dump = {}
         for asn, rank in ranks.get('top_list'):
             cc = info[asn]
