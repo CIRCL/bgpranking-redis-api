@@ -7,15 +7,13 @@
 
 import IPy
 from dateutil import parser
+from dateutil import tz
 
 from . import helper_global as h
 from . import constraints as c
 
 import asnhistory
 import ip_asn_history as ip2asn
-
-# IP where IP2ASN is running
-ip2asn.hostname = '127.0.0.1'
 
 __owner_cache = {}
 
@@ -53,11 +51,12 @@ def get_ip_info(ip, days_limit=750):
     """
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
-        first_date = parser.parse(first)
-        last_date = parser.parse(last)
+        first_date = parser.parse(first).replace(tzinfo=tz.tzutc())
+        last_date = parser.parse(last).replace(tzinfo=tz.tzutc())
         desc_history = asnhistory.get_all_descriptions(asn)
         valid_descriptions = []
         for date, descr in desc_history:
+            date = date.astimezone(tz.tzutc())
             if last_date < date:
                 # Too new
                 continue
@@ -71,7 +70,9 @@ def get_ip_info(ip, days_limit=750):
         if len(valid_descriptions) == 0:
             # fallback in case the as database is out of date.
             # Use the most recent decription.
-            valid_descriptions.append(desc_history[0])
+            date = desc_history[0][0].astimezone(tz.tzutc())
+            descr = desc_history[0][1]
+            valid_descriptions.append([date, descr])
         entry = {}
         entry['asn'] = asn
         entry['interval'] = [first_date, last_date]
