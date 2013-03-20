@@ -77,6 +77,7 @@ def get_ip_info(ip, days_limit=750):
         entry['asn'] = asn
         entry['interval'] = [first_date, last_date]
         entry['block'] = block
+        entry['timestamp'] = get_timestamp(asn, block)
         entry['descriptions'] = valid_descriptions
         to_return['history'].append(entry)
     return to_return
@@ -297,6 +298,19 @@ def get_block(asn, timestamp):
     """
     return h.__global_db.get('{asn}|{t}|ips_block'.format(asn = asn,
         t = timestamp))
+
+def get_timestamp(asn, block):
+    """
+        Get most recent timestamp of that block
+    """
+    timestamps = get_all_asn_timestamps(asn)
+    t_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
+                    for t in timestamps]
+    temp_blocks = h.__global_db.mget(t_keys)
+    index = next((i for i,b in enumerate(temp_blocks) if b == block ), None)
+    if index is not None:
+        return timestamps[index]
+    return None
 
 def get_owner(asn, block):
     """
