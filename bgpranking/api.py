@@ -6,43 +6,80 @@
 """
 
 import IPy
+from dateutil import parser
 
 from . import helper_global as h
 from . import constraints as c
 
 import asnhistory
+import ip_asn_history as ip2asn
+
+# IP where IP2ASN is running
+ip2asn.hostname = '127.0.0.1'
 
 __owner_cache = {}
 
-def __get_daily_rank_multiple_asns(asns, date, source):
+def get_ip_info(ip, days_limit=750):
     """
-        NOTE: Useless ?
-        Get the ranks of a list of ASNs for one day and one source.
+        Return informations related to an IP address.
 
-        :param asns: list of ASNs
-        :param date: date of the rank (format: YYYY-MM-DD)
-        :param source: name of the source for the rank
-
-
-        :rtype: list of rank by ASN
+        :param ip: The IP address
+        :param days_limit: The number of days we want to check in the past
+            (default: around 2 years)
+        :rtype: Dictionary
 
             .. note:: Format of the output:
 
                 .. code-block:: python
 
-                    [
-                        (asn1, rank),
-                        (asn2, rank),
-                        ...
-                    ]
+                    {
+                        'ip': ip
+                        'days_limit' : days_limit
+                        'history':
+                            [
+                                {
+                                    'asn': asn,
+                                    'interval': [first, last],
+                                    'block': block,
+                                    'descriptions':
+                                        [
+                                            [date, descr],
+                                            ...
+                                        ]
+                                },
+                                ...
+                            ]
+                    }
     """
-    string = '|{date}|{source}|rankv{ip_version}'.format(date = date,
-                source = source, ip_version = c.ip_version)
-    to_get = ['{asn}{string}'.format(asn = asn, string = string)
-            for asn in asns]
-    if len(to_get) == 0:
-        return []
-    return list(zip(asns, h.__history_db.mget(to_get)))
+    to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
+    for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
+        first_date = parser.parse(first)
+        last_date = parser.parse(last)
+        desc_history = asnhistory.get_all_descriptions(asn)
+        valid_descriptions = []
+        for date, descr in desc_history:
+            if last_date < date:
+                # Too new
+                continue
+            elif last_date >= date and first_date <= date:
+                # Changes within the interval
+                valid_descriptions.append([date, descr])
+            elif first_date > date:
+                # get the most recent change befrore the interval
+                valid_descriptions.append([date, descr])
+                break
+        if len(valid_descriptions) == 0:
+            # fallback in case the as database is out of date.
+            # Use the most recent decription.
+            valid_descriptions.append(desc_history[0])
+        entry = {}
+        entry['asn'] = asn
+        entry['interval'] = [first_date, last_date]
+        entry['block'] = block
+        entry['descriptions'] = valid_descriptions
+        to_return['history'].append(entry)
+    return to_return
+
 
 def get_last_seen_sources(asn, dates_sources):
     """
