@@ -192,7 +192,8 @@ class Master(object):
     def ip_lookup(self, ip = None):
         ip = self.__none_if_empty(ip)
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='trend', ip_lookup=ip)
+                cherrypy.request.headers['User-Agent'],
+                webpage='ip_lookup', ip_lookup=ip)
         template = self.__init_template('ip_lookup')
         template.ip = ip
         history = master_controler.get_ip_lookup(ip)
