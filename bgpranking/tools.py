@@ -102,7 +102,7 @@ def generate_dumps_for_worldmap(output_dir_js = None, output_dir_csv = None):
         info = get_asns_country_code([asn for asn, description, rank
             in ranks.get('top_list')])
         to_dump = {}
-        for asn, rank in ranks.get('top_list'):
+        for asn, d, rank in ranks.get('top_list'):
             cc = info[asn]
             if to_dump.get(cc) is None:
                 to_dump[cc] = 0
