@@ -53,30 +53,31 @@ def get_ip_info(ip, days_limit=750):
     """
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
-        first_date = parser.parse(first).replace(tzinfo=tz.tzutc())
-        last_date = parser.parse(last).replace(tzinfo=tz.tzutc())
+        first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
+        last_date = parser.parse(last).replace(tzinfo=tz.tzutc()).date()
         desc_history = asnhistory.get_all_descriptions(asn)
         valid_descriptions = []
         for date, descr in desc_history:
-            date = date.astimezone(tz.tzutc())
-            if last_date < date - datetime.timedelta(day=1):
+            date = date.astimezone(tz.tzutc()).date()
+            test_date = date - datetime.timedelta(days=1)
+            if last_date < test_date:
                 # Too new
                 continue
-            elif last_date >= date and first_date <= date:
+            elif last_date >= test_date and first_date <= test_date:
                 # Changes within the interval
-                valid_descriptions.append([date.date(), descr])
-            elif first_date > date:
+                valid_descriptions.append([date, descr])
+            elif first_date > test_date:
                 # get the most recent change befrore the interval
-                valid_descriptions.append([date.date(), descr])
+                valid_descriptions.append([date, descr])
                 break
         if len(valid_descriptions) == 0:
             # fallback, use the oldest description.
-            date = desc_history[-1][0].astimezone(tz.tzutc())
+            date = desc_history[-1][0].astimezone(tz.tzutc()).date()
             descr = desc_history[-1][1]
             valid_descriptions.append([date, descr])
         entry = {}
         entry['asn'] = asn
-        entry['interval'] = [first_date.date(), last_date.date()]
+        entry['interval'] = [first_date, last_date]
         entry['block'] = block
         entry['timestamp'] = get_timestamp(asn, block)
         entry['descriptions'] = valid_descriptions
