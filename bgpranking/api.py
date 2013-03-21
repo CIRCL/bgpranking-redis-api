@@ -39,6 +39,7 @@ def get_ip_info(ip, days_limit=750):
                                     'asn': asn,
                                     'interval': [first, last],
                                     'block': block,
+                                    'timestamp': timestamp,
                                     'descriptions':
                                         [
                                             [date, descr],

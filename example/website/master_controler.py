@@ -63,3 +63,9 @@ def get_ip_info(asn, timestamp, date = None, sources = None):
     to_return = [(ip, ', '.join(sources))
             for ip, sources in response[timestamp].iteritems()]
     return sorted(to_return, key=lambda element: len(element[1]), reverse = True)
+
+def get_ip_lookup(ip):
+    response = bgpranking.get_ip_info(ip)
+    if len(response.get('history')) == 0:
+        return None
+    return response.get('history')

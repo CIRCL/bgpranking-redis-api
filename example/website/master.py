@@ -90,10 +90,10 @@ class Master(object):
         cw.writerow(data);
         return si.getvalue().strip('\r\n');
 
-    def __query_logging(self, ip, user_agent, webpage, date=None,
-            source=None, asn=None, asn_details=None, compared_asns = None):
+    def __query_logging(self, ip, user_agent, webpage, date=None, source=None,
+            asn=None, asn_details=None, compared_asns=None, ip_lookup=None):
         publisher.info(self.__csv2string([ip, user_agent, webpage, date,
-                source, asn, asn_details, compared_asns]))
+                source, asn, asn_details, compared_asns, ip_lookup]))
 
     @cherrypy.expose
     def default(self):
@@ -187,6 +187,18 @@ class Master(object):
         self.__query_logging(cherrypy.request.remote.ip,
             cherrypy.request.headers['User-Agent'], webpage='map')
         return str(self.__init_template('map'))
+
+    @cherrypy.expose
+    def ip_looup(self, ip = None):
+        ip = self.__none_if_empty(ip)
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='trend', ip_lookup=ip)
+        template = self.__init_template('ip_lookup')
+        template.ip = ip
+        history = master_controler.get_ip_lookup(ip)
+        template.history = history
+        return str(template)
+
 
 def error_page_404(status, message, traceback, version):
     """

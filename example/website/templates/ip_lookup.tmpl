@@ -1,0 +1,37 @@
+#from master import merge_csvs
+#from templates.master import master
+#extends master
+
+#attr title = 'BGP Ranking - IP Lookup'
+#attr ip = None
+
+#block menu
+#end block menu
+
+#block main_content
+    IP to lookup:
+    <form method="get" action="ip_lookup">
+      <div>
+        <input type="text" name="ip" value="$ip"/>
+        <input type="submit" value="Submit"/>
+      </div>
+    </form> <br/>
+    <ul>
+      #if $history is not None
+        #for entry in $history
+          <li>$entry['interval'][0] - $entry['interval'][1]:
+            <a href="asn_details?asn=$entry['asn']">$entry['asn']</a> -
+            <a href="asn_details?asn=$entry['asn'];ip_details=$entry['timestamp']">
+              $entry['block']
+            </a>
+            <ul>
+              #for date, description in $entry['descriptions']
+                <li>$date: $description</li>
+              #end for
+            </ul>
+          </li>
+        #end for
+      #end if
+    </ul>
+
+#end block main_content
