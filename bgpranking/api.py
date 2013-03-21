@@ -8,6 +8,7 @@
 import IPy
 from dateutil import parser
 from dateutil import tz
+import datetime
 
 from . import helper_global as h
 from . import constraints as c
@@ -58,25 +59,24 @@ def get_ip_info(ip, days_limit=750):
         valid_descriptions = []
         for date, descr in desc_history:
             date = date.astimezone(tz.tzutc())
-            if last_date < date:
+            if last_date < date - datetime.timedelta(day=1):
                 # Too new
                 continue
             elif last_date >= date and first_date <= date:
                 # Changes within the interval
-                valid_descriptions.append([date, descr])
+                valid_descriptions.append([date.date(), descr])
             elif first_date > date:
                 # get the most recent change befrore the interval
-                valid_descriptions.append([date, descr])
+                valid_descriptions.append([date.date(), descr])
                 break
         if len(valid_descriptions) == 0:
-            # fallback in case the as database is out of date.
-            # Use the most recent decription.
-            date = desc_history[0][0].astimezone(tz.tzutc())
-            descr = desc_history[0][1]
+            # fallback, use the oldest description.
+            date = desc_history[-1][0].astimezone(tz.tzutc())
+            descr = desc_history[-1][1]
             valid_descriptions.append([date, descr])
         entry = {}
         entry['asn'] = asn
-        entry['interval'] = [first_date, last_date]
+        entry['interval'] = [first_date.date(), last_date.date()]
         entry['block'] = block
         entry['timestamp'] = get_timestamp(asn, block)
         entry['descriptions'] = valid_descriptions

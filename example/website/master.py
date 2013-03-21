@@ -189,7 +189,7 @@ class Master(object):
         return str(self.__init_template('map'))
 
     @cherrypy.expose
-    def ip_looup(self, ip = None):
+    def ip_lookup(self, ip = None):
         ip = self.__none_if_empty(ip)
         self.__query_logging(cherrypy.request.remote.ip,
             cherrypy.request.headers['User-Agent'], webpage='trend', ip_lookup=ip)
