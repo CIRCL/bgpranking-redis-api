@@ -15,6 +15,11 @@ def __prepare_request(query):
     r = requests.post(url, data=json.dumps(query), headers=headers)
     return r.json()
 
+def ip_lookup(ip, days_limit = None):
+    query = {'method': 'ip_lookup'}
+    query.update({'ip': ip, 'days_limit': days_limit})
+    return __prepare_request(query)
+
 def all_ranks_single_asn(asn, last_day = None, timeframe = None,
         dates_sources = None, with_details_sources = None):
     query = {'method': 'all_ranks_single_asn'}

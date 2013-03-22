@@ -18,7 +18,7 @@ import ip_asn_history as ip2asn
 
 __owner_cache = {}
 
-def get_ip_info(ip, days_limit=750):
+def get_ip_info(ip, days_limit = None):
     """
         Return informations related to an IP address.
 
@@ -51,6 +51,8 @@ def get_ip_info(ip, days_limit=750):
                             ]
                     }
     """
+    if days_limit is None:
+        days_limit = 750
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()

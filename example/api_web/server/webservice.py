@@ -10,7 +10,8 @@ app.debug = True
 
 authorized_methods = ['all_ranks_single_asn', 'all_ranks_all_asns',
         'block_owner_description', 'asn_description', 'ips_description',
-        'stats', 'cached_dates', 'cached_daily_rank', 'cached_top_asns']
+        'stats', 'cached_dates', 'cached_daily_rank', 'cached_top_asns',
+        'ip_lookup']
 
 class SetEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -40,6 +41,12 @@ def entry_point():
         # unknown method
         return json.dumps({})
     return fct(request.json)
+
+def ip_lookup(request):
+    ip = request.get('ip')
+    if ip is None:
+         return json.dumps({})
+    return json.dumps(bgpranking.get_ip_info(ip, request.get('days_limit')))
 
 def all_ranks_single_asn(request):
     asn = request.get('asn')
