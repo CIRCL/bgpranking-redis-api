@@ -8,6 +8,7 @@
 #attr asn_descs = []
 #attr current_sources = []
 #attr asn_description = None
+#attr desc_history = []
 
 #block menu
     <form method="get" action="/asn_details">
@@ -47,10 +48,11 @@
               </li>
             #end for
           </ul>
-          <br/>
+          #end if
+          #if len($desc_history) > 0
           Over time, this AS ($asn) had following descriptions:
           <ul>
-            #for date, description in $desc_history.iteritems()
+            #for $date, $description in $desc_history
               <li>
                 $date: $description
               </li>
