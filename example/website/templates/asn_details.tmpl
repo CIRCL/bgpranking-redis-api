@@ -39,14 +39,23 @@
     <br/>
     #if $asn is not None
         #if len($current_sources) > 0
-            This AS ($asn) is known in the following lists:
-            <ul>
+          This AS ($asn) is known in the following lists (last time seen):
+          <ul>
             #for $source, $date in $current_sources.iteritems()
-                <li>
-                    $source: $date
-                </li>
+              <li>
+                  $source: $date
+              </li>
             #end for
-            </ul>
+          </ul>
+          <br/>
+          Over time, this AS ($asn) had following descriptions:
+          <ul>
+            #for date, description in $desc_history.iteritems()
+              <li>
+                $date: $description
+              </li>
+            #end for
+          </ul>
         #end if
     #end if
 #end block menu

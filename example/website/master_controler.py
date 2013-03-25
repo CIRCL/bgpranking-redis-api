@@ -24,6 +24,9 @@ def get_sources(date):
 def get_dates():
     return bgpranking.cache_get_dates()
 
+def get_asn_descriptions(asn):
+    return bgpranking.get_asn_descriptions(asn)
+
 def get_last_seen_sources(asn):
     dates_sources = bgpranking.prepare_sources_by_dates(timeframe = 365)
     return bgpranking.get_last_seen_sources(asn, dates_sources)

@@ -18,6 +18,13 @@ import ip_asn_history as ip2asn
 
 __owner_cache = {}
 
+def get_asn_descriptions(asn):
+    desc_history = asnhistory.get_all_descriptions(asn)
+    to_return = []
+    for date, descr in desc_history:
+        to_return.append([date.astimezone(tz.tzutc()).date(), descr])
+    return to_return
+
 def get_ip_info(ip, days_limit = None):
     """
         Return informations related to an IP address.
