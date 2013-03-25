@@ -1,3 +1,4 @@
+#import cgi
 #from master import merge_csvs
 #from templates.master import master
 #extends master
@@ -49,7 +50,7 @@
             (<a href="csv/$asn" type="text/comma-separated-values">csv</a>)
             <ul>
               #for block, description in $details
-                <li>$block: $description</li>
+                <li>$block: $cgi.escape($description, True)</li>
               #end for
             </ul>
           </li>

@@ -1,3 +1,4 @@
+#import cgi
 #from master import merge_csvs
 #from templates.master import master
 #extends master
@@ -26,7 +27,7 @@
             </a>
             <ul>
               #for date, description in $entry['descriptions']
-                <li>$date: $description</li>
+                <li>$date: $cgi.escape($description, True)</li>
               #end for
             </ul>
           </li>
