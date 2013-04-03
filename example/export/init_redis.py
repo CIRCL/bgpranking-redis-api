@@ -26,6 +26,6 @@ if __name__ == '__main__':
         timestamps = bgpranking.get_all_asn_timestamps(asn)
         p = r.pipeline(False)
         for ts in timestamps:
-            p.sadd('asns_ts', "{asn}_{ts}".format(asn=asn, ts=ts))
+            p.sadd('asn_ts', "{asn}_{ts}".format(asn=asn, ts=ts))
         p.execute()
 
