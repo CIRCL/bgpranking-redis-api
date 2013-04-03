@@ -477,6 +477,9 @@ def get_asn_descs(asn, date = None, sources = None):
     return to_return
 
 def __block_lookup(asn, asn_timestamp):
+    """
+        XXX: Useless???
+    """
     key_ip_block = '{asn}|{timestamp}|ips_block'.format(asn = asn,
             timestamp=asn_timestamp)
     ip_block = h.__global_db.get(key_ip_block)
@@ -534,25 +537,23 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
     to_return = {'date': date, 'sources': sources, 'asn': asn,
             'asn_description': asnhistory.get_last_description(asn),
             'timestamp': asn_timestamp, asn_timestamp: {}}
-    ts = __block_lookup(asn, asn_timestamp)
-    for t in ts:
-        asn_timestamp_key = '{asn}|{timestamp}|{date}|'.format(asn = asn,
-                        timestamp = t, date = date)
-        pipeline = h.__global_db.pipeline(False)
-        [pipeline.smembers('{asn_ts}{source}'.format(
-                    asn_ts = asn_timestamp_key, source=source))
-                    for source in sources]
-        ips_by_source = pipeline.execute()
-        i = 0
-        for source in sources:
-            ips = ips_by_source[i]
-            for ip_details in ips:
-                ip, timestamp = ip_details.split('|')
-                if to_return[asn_timestamp].get(ip) is None:
-                    to_return[asn_timestamp][ip] = [source]
-                else:
-                    to_return[asn_timestamp][ip].append(source)
-            i += 1
+    asn_timestamp_key = '{asn}|{timestamp}|{date}|'.format(asn = asn,
+                    timestamp = asn_timestamp, date = date)
+    pipeline = h.__global_db.pipeline(False)
+    [pipeline.smembers('{asn_ts}{source}'.format(
+                asn_ts = asn_timestamp_key, source=source))
+                for source in sources]
+    ips_by_source = pipeline.execute()
+    i = 0
+    for source in sources:
+        ips = ips_by_source[i]
+        for ip_details in ips:
+            ip, timestamp = ip_details.split('|')
+            if to_return[asn_timestamp].get(ip) is None:
+                to_return[asn_timestamp][ip] = [source]
+            else:
+                to_return[asn_timestamp][ip].append(source)
+        i += 1
     return to_return
 
 def get_stats(dates_sources):
