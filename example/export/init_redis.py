@@ -22,5 +22,10 @@ if __name__ == '__main__':
 
     r = redis.Redis(unix_socket_path='./redis_export.sock')
     r.set('date', date)
-    r.sadd('asns', *asns)
+    for asn in asns:
+        timestamps = bgpranking.get_all_asn_timestamps(asn)
+        p = r.pipeline(False)
+        for ts in timestamps:
+            p.sadd('asns_ts', "{asn}_{ts}".format(asn=asn, ts=ts))
+        p.execute()
 
