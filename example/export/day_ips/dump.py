@@ -21,7 +21,4 @@ if __name__ == '__main__':
         for ip in ips:
             entries = r.hgetall(ip)
             w.writerow([entries['asn'], entries['block'], ip, entries['sources']])
-    #r.shutdown()
-
-
-# cat ips | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq >> sorted-ips
+    r.shutdown()
