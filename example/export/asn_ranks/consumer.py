@@ -11,7 +11,7 @@ csv_dir = os.path.join('..', '..', 'website', 'data', 'csv')
 if __name__ == '__main__':
 
     r = redis.Redis(unix_socket_path='./redis_export.sock')
-    interval = r.get('interval_size')
+    interval = int(r.get('interval_size'))
     dates_sources = bgpranking.prepare_sources_by_dates(None, interval)
     while True:
         asn = r.spop('asns')

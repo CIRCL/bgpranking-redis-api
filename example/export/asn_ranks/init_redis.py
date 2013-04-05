@@ -13,5 +13,5 @@ if __name__ == '__main__':
 
     r = redis.Redis(unix_socket_path='./redis_export.sock')
     r.set('interval_size', interval_size)
-    r.mset('asns', *asns)
+    r.sadd('asns', *asns)
 
