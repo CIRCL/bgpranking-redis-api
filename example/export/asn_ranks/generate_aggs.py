@@ -3,7 +3,7 @@
 
 import json
 import os
-import urllib
+import urllib2
 from bgpranking import tools
 
 
@@ -14,7 +14,7 @@ js_dir = os.path.join('..', '..', 'website', 'data', 'js')
 ripe_url = 'https://stat.ripe.net/data/country-resource-list/data.json?resource=lu'
 
 def get_announces():
-    handle = urllib.urlopen(ripe_url)
+    handle = urllib2.urlopen(ripe_url, timeout=10)
     json_dump = handle.read()
     data = json.loads(json_dump)
     asns = data['data']['resources']['asn']
