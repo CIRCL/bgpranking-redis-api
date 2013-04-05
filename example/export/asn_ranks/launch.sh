@@ -12,5 +12,4 @@ python ./consumer.py
 date
 sleep 10
 
-python ./dump.py
-date
+redis-cli -s ./redis_export.sock shutdown
