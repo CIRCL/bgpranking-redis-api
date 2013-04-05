@@ -13,3 +13,7 @@ date
 sleep 10
 
 redis-cli -s ./redis_export.sock shutdown
+
+bash ./generate_aggs.py
+
+date
