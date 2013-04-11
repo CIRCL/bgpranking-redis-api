@@ -193,8 +193,12 @@ def __get_default_date_raw():
     """
         Get the default date displayed on the website.
     """
-    timestamp = __history_db.get('latest_ranking')
     delta = datetime.timedelta(days=1)
+    try:
+        timestamp = __history_db.get('latest_ranking')
+    except:
+        # TODO: hotfix, can be better
+        timestamp = None
     if timestamp is not None:
         default_date_raw = parser.parse(timestamp.split()[0]).date() - delta
     else:

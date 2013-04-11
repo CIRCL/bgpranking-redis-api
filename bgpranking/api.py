@@ -13,12 +13,24 @@ import datetime
 from . import helper_global as h
 from . import constraints as c
 
-import asnhistory
-import ip_asn_history as ip2asn
+try:
+    import asnhistory
+    use_asnhistory = True
+except:
+    use_asnhistory = False
+
+try:
+    import ip_asn_history as ip2asn
+    use_ip2asn = True
+except:
+    use_ip2asn = False
 
 __owner_cache = {}
 
 def get_asn_descriptions(asn):
+    if not use_asnhistory:
+        # FIXME: add error message
+        return []
     desc_history = asnhistory.get_all_descriptions(asn)
     to_return = []
     for date, descr in desc_history:
@@ -61,24 +73,31 @@ def get_ip_info(ip, days_limit = None):
     if days_limit is None:
         days_limit = 750
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
+    if not use_ip2asn:
+        #FIXME: error msg
+        return to_return
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
         last_date = parser.parse(last).replace(tzinfo=tz.tzutc()).date()
-        desc_history = asnhistory.get_all_descriptions(asn)
-        valid_descriptions = []
-        for date, descr in desc_history:
-            date = date.astimezone(tz.tzutc()).date()
-            test_date = date - datetime.timedelta(days=1)
-            if last_date < test_date:
-                # Too new
-                continue
-            elif last_date >= test_date and first_date <= test_date:
-                # Changes within the interval
-                valid_descriptions.append([date, descr])
-            elif first_date > test_date:
-                # get the most recent change befrore the interval
-                valid_descriptions.append([date, descr])
-                break
+        if use_asnhistory:
+            desc_history = asnhistory.get_all_descriptions(asn)
+            valid_descriptions = []
+            for date, descr in desc_history:
+                date = date.astimezone(tz.tzutc()).date()
+                test_date = date - datetime.timedelta(days=1)
+                if last_date < test_date:
+                    # Too new
+                    continue
+                elif last_date >= test_date and first_date <= test_date:
+                    # Changes within the interval
+                    valid_descriptions.append([date, descr])
+                elif first_date > test_date:
+                    # get the most recent change befrore the interval
+                    valid_descriptions.append([date, descr])
+                    break
+        else:
+            #FIXME: error/information
+            pass
         if len(valid_descriptions) == 0:
             # fallback, use the oldest description.
             date = desc_history[-1][0].astimezone(tz.tzutc()).date()
@@ -186,8 +205,13 @@ def get_all_ranks_single_asn(asn, dates_sources,
             to_return[date] = {}
             if with_details_sources:
                 to_return[date].update({'details': list(zip(sources, ranks[i]))})
-            to_return[date].update(
-                    {'description': asnhistory.get_last_description(asn)})
+            if use_asnhistory:
+                to_return[date].update(
+                        {'description': asnhistory.get_last_description(asn)})
+            else:
+                #FIXME: error msg
+                to_return[date].update(
+                        {'description': ''})
             to_return[date].update({'total' : 0})
             for s, r in zip(sources, ranks[i]):
                 if r is not None:
@@ -416,8 +440,13 @@ def get_asn_descs(asn, date = None, sources = None):
         if type(sources) is not type([]):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
+    if use_asnhistory:
+        asn_descr = asnhistory.get_last_description(asn)
+    else:
+        #FIXME: error msg
+        asn_descr = ''
     to_return = {'date': date, 'sources': sources, 'asn': asn,
-            'asn_description': asnhistory.get_last_description(asn), asn: {}}
+            'asn_description': asn_descr, asn: {}}
     temp_blocks = {}
     for timestamp in get_all_asn_timestamps(asn):
         # Get the number of IPs found in the database for each subnet
@@ -533,10 +562,14 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
         if type(sources) is not type([]):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
-
+    if use_asnhistory:
+        asn_descr = asnhistory.get_last_description(asn)
+    else:
+        #FIXME: error msg
+        asn_descr = ''
     to_return = {'date': date, 'sources': sources, 'asn': asn,
-            'asn_description': asnhistory.get_last_description(asn),
-            'timestamp': asn_timestamp, asn_timestamp: {}}
+            'asn_description': asn_descr, 'timestamp': asn_timestamp,
+            asn_timestamp: {}}
     asn_timestamp_key = '{asn}|{timestamp}|{date}|'.format(asn = asn,
                     timestamp = asn_timestamp, date = date)
     pipeline = h.__global_db.pipeline(False)
@@ -652,8 +685,12 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
         date = h.get_default_date()
     histo_key = '{date}|{source}|rankv{ip_version}'.format(
             date = date, source = source, ip_version = c.ip_version)
-    return asn, asnhistory.get_last_description(asn), date, source,\
-                h.__history_db_cache.zscore(histo_key, asn)
+    if use_asnhistory:
+        asn_descr = asnhistory.get_last_description(asn)
+    else:
+        #FIXME: error msg
+        asn_descr = ''
+    return asn, asn_descr, date, source, h.__history_db_cache.zscore(histo_key, asn)
 
 def cache_get_top_asns(source = 'global', date = None, limit = 50,
         with_sources = True):
@@ -708,7 +745,12 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
         return to_return
     temp_rank = []
     for asn, rank in ranks:
-        temp_rank.append((asn, asnhistory.get_last_description(asn), rank))
+        if use_asnhistory:
+            asn_descr = asnhistory.get_last_description(asn)
+        else:
+            #FIXME: error msg
+            asn_descr = ''
+        temp_rank.append((asn, asn_descr, rank))
     if not with_sources:
         to_return['top_list'] = temp_rank
     else:
