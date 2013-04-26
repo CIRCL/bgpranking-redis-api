@@ -135,7 +135,8 @@ class Master(object):
         asn = asn.lstrip('AS')
         if asn.isdigit():
             template.asn = asn
-            asn_description, as_infos = master_controler.get_as_infos(asn, date, source)
+            asn_description, as_infos = master_controler.get_as_infos(asn,
+                    date, source)
             if as_infos is not None and len(as_infos) > 0:
                 template.asn_description = asn_description
                 template.asn_descs = as_infos

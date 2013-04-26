@@ -54,16 +54,17 @@ def get_as_infos(asn, date = None, sources = None):
         else:
             to_return.append([entry['description'], key, entry['nb_of_ips'],
                 ', '.join(entry['sources']), 1 + entry['rank']])
-    return response['asn_description'], \
-            sorted(to_return, key=lambda element: (element[5],
-                element[3]), reverse = True)
+    return response['asn_description'], sorted(to_return,
+            key=lambda element: (element[4], element[2]), reverse = True)
 
 def get_ip_info(asn, block, date = None, sources = None):
     response = bgpranking.get_ips_descs(asn, block, date, sources)
     if response.get(block) is None:
         return None
-    to_return = [(ip, ', '.join(sources)) for ip, sources in response[block].iteritems()]
-    return sorted(to_return, key=lambda element: len(element[1]), reverse = True)
+    to_return = [(ip, ', '.join(sources))
+            for ip, sources in response[block].iteritems()]
+    return sorted(to_return, key=lambda element: len(element[1]),
+            reverse=True)
 
 def get_ip_lookup(ip):
     response = bgpranking.get_ip_info(ip)

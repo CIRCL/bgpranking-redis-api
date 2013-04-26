@@ -49,8 +49,8 @@ def get_ip_info(ip, days_limit = None):
                 .. code-block:: python
 
                     {
-                        'ip': ip
-                        'days_limit' : days_limit
+                        'ip': ip,
+                        'days_limit' : days_limit,
                         'history':
                             [
                                 {
@@ -358,12 +358,34 @@ def get_block_descriptions(asn, block):
     """
     ts_descr = h.__global_db.hgetall('|'.join([asn, block]))
     timestamps = sorted(ts_descr.keys(), reverse=True)
-    to_return = [asn, block, []]
+    descriptions = []
     for t in timestamps:
-        to_return[2].append((t, ts_descr[t]))
-    return to_return
+        descriptions.append((t, ts_descr[t]))
+    return asn, block, descriptions
 
 def get_all_blocks_descriptions(asn):
+    """
+        Return all tuples timestamp-description of all the blocs announced
+        by an AS over time.
+
+        :param asn: Autonomous System Number
+        :rtype: List
+
+            .. note:: Format of the list:
+
+                .. code-block:: python
+
+                    [   asn,
+                        {
+                            block:
+                                [
+                                    (timestamp, description),
+                                    ...
+                                ],
+                            ...
+                        }
+                    ]
+    """
     blocks_descriptions = {}
     for block in get_all_blocks(asn):
         asn, block, descriptions = get_block_descriptions(asn, block)
@@ -442,8 +464,8 @@ def get_asn_descs(asn, date = None, sources = None):
     key_clean_set = '{asn}|{date}|clean_set'.format(asn=asn, date=date)
     for ip_block in get_all_blocks(asn):
         # Get descriptions
-        ts_descr = get_block_descriptions(asn, ip_block)[2]
-        # Find out if the block has been seen today
+        asn, block, ts_descr = get_block_descriptions(asn, ip_block)
+        # Find out if the block has been seen these day
         p = h.__global_db.pipeline(False)
         [p.scard('|'.join([asn, ip_block, date, source]) for source in sources)]
         ips_by_sources = p.execute()
