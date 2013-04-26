@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.debug = True
 
 authorized_methods = ['all_ranks_single_asn', 'all_ranks_all_asns',
-        'block_owner_description', 'asn_description', 'ips_description',
+        'block_descriptions', 'asn_description', 'ips_description',
         'stats', 'cached_dates', 'cached_daily_rank', 'cached_top_asns',
         'ip_lookup']
 
@@ -62,12 +62,12 @@ def all_ranks_all_asns(request):
     return json.dumps(bgpranking.get_all_ranks_all_asns(dates_sources,
         with_details_sources))
 
-def block_owner_description(request):
+def block_descriptions(request):
     asn = request.get('asn')
     block = request.get('block')
     if asn is None or block is None:
         return json.dumps([])
-    return json.dumps(bgpranking.get_owner(asn, block))
+    return json.dumps(bgpranking.get_block_descriptions(asn, block))
 
 def asn_description(request):
     asn = request.get('asn')
@@ -78,10 +78,10 @@ def asn_description(request):
 
 def ips_description(request):
     asn = request.get('asn')
-    asn_timestamp = request.get('asn_timestamp')
-    if asn is None or asn_timestamp is None:
+    block = request.get('block')
+    if asn is None or block is None:
         return json.dumps({})
-    return json.dumps(bgpranking.get_ips_descs(asn, asn_timestamp,
+    return json.dumps(bgpranking.get_ips_descs(asn, block,
         request.get('date'), request.get('sources')))
 
 def stats(request):

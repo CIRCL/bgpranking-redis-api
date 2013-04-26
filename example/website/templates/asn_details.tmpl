@@ -97,7 +97,6 @@
     <table id="hor-minimalist-a">
         <thead>
             <tr>
-                <th scope="col" >Timestamp</th>
                 <th scope="col" >Owner</th>
                 <th scope="col" >Block</th>
                 <th scope="col" >Number of IPs today</th>
@@ -107,12 +106,11 @@
         </thead>
         #for $asn_desc in $asn_descs
         <tr>
-            <td>$asn_desc[0]</td>
-            <td>$cgi.escape($asn_desc[1], True)</td>
-            <td><a href="/asn_details?date=${date};source=${source};asn=${asn};ip_details=${asn_desc[0]}">$asn_desc[2]</a></td>
+            <td>$cgi.escape($asn_desc[0], True)</td>
+            <td><a href="/asn_details?date=${date};source=${source};asn=${asn};ip_details=${asn_desc[1]}">$asn_desc[1]</a></td>
+            <td>$asn_desc[2]</td>
             <td>$asn_desc[3]</td>
             <td>$asn_desc[4]</td>
-            <td>$asn_desc[5]</td>
         </tr>
         #end for
     </table>

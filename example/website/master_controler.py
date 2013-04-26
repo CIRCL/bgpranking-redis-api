@@ -37,7 +37,7 @@ def get_comparator_metatada(asns_string):
         splitted_asns = [splitted_asns]
     details_list = []
     for asn in splitted_asns:
-        details_list.append(bgpranking.get_all_block_descriptions(asn))
+        details_list.append(bgpranking.get_all_blocks_descriptions(asn))
     return splitted_asns, details_list
 
 def get_as_infos(asn, date = None, sources = None):
@@ -47,24 +47,22 @@ def get_as_infos(asn, date = None, sources = None):
     to_return = []
     for key, entry in response[asn].iteritems():
         if key == 'clean_blocks':
-            to_return += [ [timestamp, owner, block, 0, '', 0]
-                for timestamp, block, owner in entry]
+            to_return += [[descr[0][1], block, 0, '', 0]
+                    for block, descr in entry.iteritems()]
         elif key == 'old_blocks':
             pass
         else:
-            to_return.append([key, entry['owner'], entry['ip_block'],
-                entry['nb_of_ips'], ', '.join(entry['sources']),
-                1 + entry['rank']])
+            to_return.append([entry['description'], key, entry['nb_of_ips'],
+                ', '.join(entry['sources']), 1 + entry['rank']])
     return response['asn_description'], \
             sorted(to_return, key=lambda element: (element[5],
                 element[3]), reverse = True)
 
-def get_ip_info(asn, timestamp, date = None, sources = None):
-    response = bgpranking.get_ips_descs(asn, timestamp, date, sources)
-    if response.get(timestamp) is None:
+def get_ip_info(asn, block, date = None, sources = None):
+    response = bgpranking.get_ips_descs(asn, block, date, sources)
+    if response.get(block) is None:
         return None
-    to_return = [(ip, ', '.join(sources))
-            for ip, sources in response[timestamp].iteritems()]
+    to_return = [(ip, ', '.join(sources)) for ip, sources in response[block].iteritems()]
     return sorted(to_return, key=lambda element: len(element[1]), reverse = True)
 
 def get_ip_lookup(ip):

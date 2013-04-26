@@ -25,8 +25,6 @@ try:
 except:
     use_ip2asn = False
 
-__owner_cache = {}
-
 def get_asn_descriptions(asn):
     if not use_asnhistory:
         # FIXME: add error message
@@ -107,7 +105,7 @@ def get_ip_info(ip, days_limit = None):
         entry['asn'] = asn
         entry['interval'] = [first_date, last_date]
         entry['block'] = block
-        entry['timestamp'] = get_timestamp(asn, block)
+        entry['timestamp'] = get_first_seen(asn, block)
         entry['descriptions'] = valid_descriptions
         to_return['history'].append(entry)
     return to_return
@@ -289,19 +287,18 @@ def get_all_ranks_all_asns(dates_sources, with_details_sources = False):
             to_return[date][asn] = entries
     return to_return
 
-def get_all_asn_timestamps(asn):
+def get_all_blocks(asn):
     """
-        Expose the list of ASN timestamps outside of the library.
-        The list is sorted (most recent -> oldest)
+        Expose the list of blocks announced by an AS.
 
         :param asn: Autonomous System Number
-        :rtype: Set os timestamps (iso format)
+        :rtype: Set of ip blocks
     """
-    return sorted(h.__global_db.smembers(asn), reverse=True)
+    return h.__global_db.smembers(asn)
 
-def get_all_block_descriptions(asn):
+def get_all_blocks_description(asn):
     """
-        Get all the blocks and descriptions on an ASN available in the database
+        Get the most recent description of all the blocks announced by an AS
 
         :param asn: Autonomous System Number
         :rtype: List
@@ -312,72 +309,66 @@ def get_all_block_descriptions(asn):
 
                     [asn, [(block, description), ...]]
     """
-    timestamps = get_all_asn_timestamps(asn)
-    if len(timestamps) > 0:
-        block_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
-                for t in timestamps]
-        descr_keys = ['{asn}|{t}|owner'.format(asn = asn, t = t)
-                for t in timestamps]
-        blocks = h.__global_db.mget(block_keys)
-        descrs = h.__global_db.mget(descr_keys)
-        return asn, zip(blocks, descrs)
+    blocks = get_all_blocks(asn)
+    if len(blocks) > 0:
+        block_keys = ['{asn}|{block}'.format(asn=asn, block=block)
+                for block in blocks]
+        p = h.__global_db.pipeline(False)
+        for block_key in block_keys:
+            p.__global_db.hgetall(block_key)
+        ts_descr = p.execute()
+        i = 0
+        block_descr = []
+        for block_key in block_keys:
+            if ts_descr[i] is not None:
+                asn, block = block_key.split('|')
+                most_recent_ts = sorted(ts_descr[i].keys())[0]
+                descr = ts_descr[i][most_recent_ts]
+                block_descr.append((block, descr))
+            i += 1
+        return asn, block_descr
     else:
         return asn, []
 
-def get_block(asn, timestamp):
+def get_first_seen(asn, block):
     """
-        Get an IP block for an asn and timestamp.
-
-        :param asn: Autonomous System Number
-        :param timestamp: Time stamp of the forst time we saw this block
+        Get the oldest timestamp where the block has been announced by the AS
     """
-    return h.__global_db.get('{asn}|{t}|ips_block'.format(asn = asn,
-        t = timestamp))
-
-def get_timestamp(asn, block):
-    """
-        Get most recent timestamp of that block
-    """
-    timestamps = get_all_asn_timestamps(asn)
-    t_keys = ['{asn}|{t}|ips_block'.format(asn = asn, t = t)
-                    for t in timestamps]
-    temp_blocks = h.__global_db.mget(t_keys)
-    index = next((i for i,b in enumerate(temp_blocks) if b == block ), None)
-    if index is not None:
-        return timestamps[index]
+    timestamps = h.__global_db.hkeys(asn + '|' + block)
+    if timestamps is not None:
+        timestamps.sort()
+        return timestamps[0]
     return None
 
-def get_owner(asn, block):
+def get_block_descriptions(asn, block):
     """
-        Get the description of the ASN (usually the owner name).
+        Return all the descriptions of a block, in a listed sorted by
+        timestamp (new => old)
 
         :param asn: Autonomous System Number
         :param block: IP Block you are looking for
+
         :rtype: List
 
             .. note:: Format of the list:
 
                 .. code-block:: python
 
-                    [asn, block, owner]
-
+                    [asn, block, [(ts, descr), ...]]
     """
-    global __owner_cache
-    if __owner_cache.get(asn) is None:
-        if not h.asn_exists(asn):
-            return h.unknown_asn
-        timestamps = get_all_asn_timestamps(asn)
-        t_keys = [ '{asn}|{t}|ips_block'.format(asn = asn, t = t)
-                for t in timestamps]
-        temp_blocks = h.__global_db.mget(t_keys)
-        __owner_cache[asn] = list(zip(timestamps, temp_blocks))
-    owner = None
-    for ts, temp_block in __owner_cache[asn]:
-        if temp_block==block:
-            owner = h.__global_db.get(
-                    '{asn}|{t}|owner'.format(asn = asn, t = ts))
-            break
-    return [asn, block, owner]
+    ts_descr = h.__global_db.hgetall('|'.join([asn, block]))
+    timestamps = sorted(ts_descr.keys(), reverse=True)
+    to_return = [asn, block, []]
+    for t in timestamps:
+        to_return[2].append((t, ts_descr[t]))
+    return to_return
+
+def get_all_blocks_descriptions(asn):
+    blocks_descriptions = {}
+    for block in get_all_blocks(asn):
+        asn, block, descriptions = get_block_descriptions(asn, block)
+        blocks_descriptions[block] = descriptions
+    return asn, blocks_descriptions
 
 
 def get_asn_descs(asn, date = None, sources = None):
@@ -403,20 +394,20 @@ def get_asn_descs(asn, date = None, sources = None):
                             asn:
                                 {
                                     'clean_blocks':
-                                        [
-                                            (timestamp, block, descr),
-                                            ...
-                                        ],
-                                    'old_blocks':
-                                        [
-                                            (timestamp, block, descr),
-                                            ...
-                                        ],
-                                    asn_timestamp:
                                         {
-                                            'owner': owner_description,
+                                            block: [[ts, descr], ...],
+                                            ....
+                                        },
+                                    'old_blocks':
+                                        {
+                                            block: [[ts, descr], ...],
+                                            ....
+                                        },
+                                    block:
+                                        {
+                                            'description': description,
+                                            'timestamp': ts,
                                             'old_descr': [(timestamp, description), ...]
-                                            'ip_block': block,
                                             'nb_of_ips': nb,
                                             'sources': [source1, source2, ...]
                                             'rank': subnet_rank
@@ -447,39 +438,30 @@ def get_asn_descs(asn, date = None, sources = None):
         asn_descr = ''
     to_return = {'date': date, 'sources': sources, 'asn': asn,
             'asn_description': asn_descr, asn: {}}
-    temp_blocks = {}
-    for timestamp in get_all_asn_timestamps(asn):
-        # Get the number of IPs found in the database for each subnet
-        asn_timestamp_key = '{asn}|{timestamp}|'.format(asn = asn,
-                                timestamp = timestamp)
+
+    key_clean_set = '{asn}|{date}|clean_set'.format(asn=asn, date=date)
+    for ip_block in get_all_blocks(asn):
+        # Get descriptions
+        ts_descr = get_block_descriptions(asn, ip_block)[2]
+        # Find out if the block has been seen today
         p = h.__global_db.pipeline(False)
-        [p.scard(
-            '{asn_ts}{date}|{source}'.format(asn_ts=asn_timestamp_key,
-            date = date, source=source)) for source in sources]
+        [p.scard('|'.join([asn, ip_block, date, source]) for source in sources)]
         ips_by_sources = p.execute()
         nb_of_ips = sum(ips_by_sources)
 
-        key_owner = '{asn_ts}owner'.format(asn_ts = asn_timestamp_key)
-        key_block = '{asn_ts}ips_block'.format(asn_ts = asn_timestamp_key)
-        key_clean_set = '{asn}|{date}|clean_set'.format(asn = asn, date = date)
-        owner, ip_block = h.__global_db.mget([key_owner, key_block])
-        ts = temp_blocks.get(ip_block)
-        if ts is not None:
-            if to_return[asn].get(ts) is not None:
-                if to_return[asn][ts].get('old_descr') is None:
-                    to_return[asn][ts]['old_descr'] = []
-                to_return[asn][ts]['old_descr'].append((timestamp, owner))
-            # ugly hotfix. The update of block description has to be fixed.
-            if nb_of_ips == 0:
-                continue
+        if nb_of_ips == 0:
+            if ip_block in h.__history_db.smembers(key_clean_set):
+                if to_return[asn].get('clean_blocks') is None:
+                    to_return[asn]['clean_blocks'] = {}
+                to_return[asn]['clean_blocks'][ip_block] = ts_descr
             else:
-                timestamp = ts
+                if to_return[asn].get('old_blocks') is None:
+                    to_return[asn]['old_blocks'] = {}
+                to_return[asn]['old_blocks'][ip_block] = ts_descr
         else:
-            temp_blocks[ip_block] = timestamp
-        if nb_of_ips > 0:
             impacts = h.get_all_weights(date)
-            # Compute the local ranking: the ranking if this subnet is the
-            # only one for this AS
+            # Compute the local ranking: the ranking if this subnet is
+            # the only one for this AS
             i = 0
             sum_rank = 0
             sources_exists = []
@@ -489,39 +471,12 @@ def get_asn_descs(asn, date = None, sources = None):
                     sources_exists.append(source)
                 i += 1
             local_rank = sum_rank / IPy.IP(ip_block).len()
-            to_return[asn][timestamp] = {'owner': owner,
-                    'ip_block': ip_block, 'nb_of_ips': nb_of_ips,
-                    'sources': sources_exists, 'rank': local_rank}
-        elif ip_block in h.__history_db.smembers(key_clean_set):
-            if to_return[asn].get('clean_blocks') is None:
-                to_return[asn]['clean_blocks'] = []
-            to_return[asn]['clean_blocks'].append(
-                    (timestamp, ip_block, owner))
-        else:
-            # Not announced anymore.
-            if to_return[asn].get('old_blocks') is None:
-                to_return[asn]['old_blocks'] = []
-            to_return[asn]['old_blocks'].append(
-                    (timestamp, ip_block, owner))
-    return to_return
+            to_return[asn][ip_block] = {'description': ts_descr[0][1],
+                    'timestamp': ts_descr[0][0], 'old_descr': ts_descr[1:],
+                    'nb_of_ips': nb_of_ips, 'sources': sources_exists,
+                    'rank': local_rank}
 
-def __block_lookup(asn, asn_timestamp):
-    """
-        XXX: Useless???
-    """
-    key_ip_block = '{asn}|{timestamp}|ips_block'.format(asn = asn,
-            timestamp=asn_timestamp)
-    ip_block = h.__global_db.get(key_ip_block)
-    to_return = []
-    for t in get_all_asn_timestamps(asn):
-        key_ip_block = '{asn}|{timestamp}|ips_block'.format(asn = asn,
-            timestamp=t)
-        if h.__global_db.get(key_ip_block) == ip_block:
-            to_return.append(t)
-    return to_return
-
-
-def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
+def get_ips_descs(asn, block, date = None, sources = None):
     """
         Get all what is available in the database about an subnet for one day
 
@@ -543,8 +498,8 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
                         'sources': [source1, source2, ...],
                         'asn': asn,
                         'asn_description': asn_description,
-                        'timestamp': asn_timestamp
-                        asn_timestamp:
+                        'block': block
+                        block:
                             {
                                 ip: [source1, source2, ...],
                                 ...
@@ -568,24 +523,20 @@ def get_ips_descs(asn, asn_timestamp, date = None, sources = None):
         #FIXME: error msg
         asn_descr = ''
     to_return = {'date': date, 'sources': sources, 'asn': asn,
-            'asn_description': asn_descr, 'timestamp': asn_timestamp,
-            asn_timestamp: {}}
-    asn_timestamp_key = '{asn}|{timestamp}|{date}|'.format(asn = asn,
-                    timestamp = asn_timestamp, date = date)
+            'asn_description': asn_descr, 'block': block, block: {}}
+    asn_block_key = '{asn}|{b}|{date}|'.format(asn=asn, b=block, date=date)
     pipeline = h.__global_db.pipeline(False)
-    [pipeline.smembers('{asn_ts}{source}'.format(
-                asn_ts = asn_timestamp_key, source=source))
-                for source in sources]
+    [pipeline.smembers('{asn_b}{source}'.format(asn_b=asn_block_key,
+                source=source)) for source in sources]
     ips_by_source = pipeline.execute()
     i = 0
     for source in sources:
         ips = ips_by_source[i]
         for ip_details in ips:
             ip, timestamp = ip_details.split('|')
-            if to_return[asn_timestamp].get(ip) is None:
-                to_return[asn_timestamp][ip] = [source]
-            else:
-                to_return[asn_timestamp][ip].append(source)
+            if to_return[block].get(ip) is None:
+                to_return[block][ip] = []
+            to_return[block][ip].append(source)
         i += 1
     return to_return
 
