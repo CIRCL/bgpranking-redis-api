@@ -454,7 +454,11 @@ def get_asn_descs(asn, date = None, sources = None):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
     if use_asnhistory:
-        asn_descr = asnhistory.get_last_description(asn)
+        try:
+            asn_descr = asnhistory.get_last_description(asn)
+        except:
+            #FIXME: error msg
+            asn_descr = ''
     else:
         #FIXME: error msg
         asn_descr = ''
@@ -467,7 +471,7 @@ def get_asn_descs(asn, date = None, sources = None):
         asn, block, ts_descr = get_block_descriptions(asn, ip_block)
         # Find out if the block has been seen these day
         p = h.__global_db.pipeline(False)
-        [p.scard('|'.join([asn, ip_block, date, source]) for source in sources)]
+        [p.scard('|'.join([asn, ip_block, date, source])) for source in sources]
         ips_by_sources = p.execute()
         nb_of_ips = sum(ips_by_sources)
 
@@ -713,6 +717,7 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
     histo_key = '{date}|{histo_key}|rankv{ip_version}'.format(date = date,
                        histo_key = source, ip_version = c.ip_version)
     to_return = {'source': source, 'date': date, 'top_list': []}
+    print histo_key
     ranks = h.__history_db_cache.zrevrange(histo_key, 0, limit, True)
     if ranks is None:
         return to_return
