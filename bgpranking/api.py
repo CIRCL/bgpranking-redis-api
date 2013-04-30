@@ -335,7 +335,7 @@ def get_first_seen(asn, block):
         Get the oldest timestamp where the block has been announced by the AS
     """
     timestamps = h.__global_db.hkeys(asn + '|' + block)
-    if timestamps is not None:
+    if timestamps is not None and len(timestamps) > 0:
         timestamps.sort()
         return timestamps[0]
     return None
