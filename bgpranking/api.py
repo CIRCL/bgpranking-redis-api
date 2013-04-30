@@ -454,11 +454,7 @@ def get_asn_descs(asn, date = None, sources = None):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
     if use_asnhistory:
-        try:
-            asn_descr = asnhistory.get_last_description(asn)
-        except:
-            #FIXME: error msg
-            asn_descr = ''
+        asn_descr = asnhistory.get_last_description(asn)
     else:
         #FIXME: error msg
         asn_descr = ''
@@ -501,6 +497,7 @@ def get_asn_descs(asn, date = None, sources = None):
                     'timestamp': ts_descr[0][0], 'old_descr': ts_descr[1:],
                     'nb_of_ips': nb_of_ips, 'sources': sources_exists,
                     'rank': local_rank}
+    return to_return
 
 def get_ips_descs(asn, block, date = None, sources = None):
     """

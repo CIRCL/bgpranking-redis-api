@@ -54,7 +54,7 @@
           <a href="asn_details?asn=${asn};ip_details=${block}">$block</a>:
             <ul>
             #for ts, descr in ts_descr
-              <li>$cgi.escape($descr, True): ts</li>
+              <li>$cgi.escape($descr, True): $ts</li>
             #end for
             </ul>
           </li>
