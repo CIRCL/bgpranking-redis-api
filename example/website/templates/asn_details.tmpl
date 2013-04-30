@@ -107,7 +107,7 @@
         #for $asn_desc in $asn_descs
         <tr>
             <td>$cgi.escape($asn_desc[0], True)</td>
-            <td><a href="/asn_details?date=${date};source=${source};asn=${asn};ip_details=${asn_desc[1]}">$asn_desc[1]</a></td>
+            <td><a href="asn_details?date=${date};source=${source};asn=${asn};ip_details=${asn_desc[1]}">$asn_desc[1]</a></td>
             <td>$asn_desc[2]</td>
             <td>$asn_desc[3]</td>
             <td>$asn_desc[4]</td>
@@ -125,7 +125,7 @@
                 </thead>
                 #for $ip_desc in $ip_descs
                 <tr>
-                    <td>$ip_desc[0]</td>
+                  <td><a href="ip_lookup?ip=$ip_desc[0]">$ip_desc[0]</a></td>
                     <td>$ip_desc[1]</td>
                 </tr>
                 #end for
