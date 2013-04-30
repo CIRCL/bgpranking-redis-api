@@ -45,15 +45,22 @@
     </script>
     <ul>
       #if $asns_details is not None
-        #for asn, details in $asns_details
-          <li><a href="asn_details?asn=$asn">$asn</a>
-            (<a href="csv/$asn" type="text/comma-separated-values">csv</a>)
+        #for asn, blocks_descriptions in $asns_details
+      <li>
+        <a href="asn_details?asn=$asn">$asn</a> (<a href="csv/$asn" type="text/comma-separated-values">csv</a>)
+        <ul>
+          #for block, ts_descr in $blocks_descriptions.iteritems()
+          <li>
+          <a href="asn_details?asn=${asn};ip_details=${block}">$block</a>:
             <ul>
-              #for block, description in $details
-                <li>$block: $cgi.escape($description, True)</li>
-              #end for
+            #for ts, descr in ts_descr
+              <li>$cgi.escape($descr, True): $ts</li>
+            #end for
             </ul>
           </li>
+          #end for
+        </ul>
+      </li>
         #end for
       #end if
     </ul>

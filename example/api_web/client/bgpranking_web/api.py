@@ -57,8 +57,8 @@ def stats(last_day = None, timeframe = None, dates_sources = None):
             'dates_sources': dates_sources})
     return __prepare_request(query)
 
-def block_owner_description(asn, block):
-    query = {'method': 'block_owner_description'}
+def block_descriptions(asn, block):
+    query = {'method': 'block_descriptions'}
     query.update({'asn': asn, 'block': block})
     return __prepare_request(query)
 
