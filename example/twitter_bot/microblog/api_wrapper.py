@@ -12,6 +12,7 @@
 
 import twitter
 import datetime
+import dateutil
 
 from micro_blog_keys import *
 import bgpranking
@@ -31,10 +32,10 @@ def prepare_string():
             date=datetime.date.today().isoformat())
     top = bgpranking.cache_get_top_asns(limit=5, with_sources=False)
     for asn, descr, rank in top['top_list']:
+        rank = round(1+rank, 4)
         to_return += '{asn}: {rank}\n'.format(asn=asn, rank=rank)
     to_return += 'http://bgpranking.circl.lu'
     return to_return
-
 
 def post_new_top_ranking():
     found = False
@@ -47,13 +48,14 @@ def post_new_top_ranking():
         status = api.GetUserTimeline("bgpranking", page=i)
         i += 1
         for s in status:
-            t = s.get('text')
+            t = s.text
             if t is not None and t.startswith('Top Ranking'):
                 found = True
                 most_recent_post = dateutil.parser.parse(
-                        s.get('created_at')).replace(tzinfo=None)
+                        s.created_at).replace(tzinfo=None).date()
                 if most_recent_post < today:
                     posted = True
                     to_post = prepare_string()
                     api.PostUpdate(to_post)
+                break
     return posted
