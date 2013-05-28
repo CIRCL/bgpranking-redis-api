@@ -10,7 +10,7 @@ import operator
 
 import bgpranking
 
-def aggregate_csvs(output_csv_dir, output_agg_dir, **kwargs):
+def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
     """
         Aggregate lists of ASNs in a single CSV file.
 
