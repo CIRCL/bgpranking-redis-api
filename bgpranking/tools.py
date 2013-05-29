@@ -22,6 +22,7 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
     """
     csv_files = glob.glob(os.path.join(output_csv_dir, '*'))
     result = {}
+
     for csv_file in csv_files:
         asn = os.path.basename(csv_file)
         with open(csv_file, 'r') as f:
@@ -40,6 +41,7 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
                         if result[entry['day']].get(key) is None:
                             result[entry['day']][key] = 0
                         result[entry['day']][key] += rank
+                        break
     if with_world:
         fieldnames = ['world']
     else:

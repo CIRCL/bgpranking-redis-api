@@ -13,7 +13,6 @@ g = new Dygraph(
                  }
             },
       legend: 'always',
-      fillGraph: true,
       rollPeriod: 7,
       showRoller: true,
       logscale : true,
