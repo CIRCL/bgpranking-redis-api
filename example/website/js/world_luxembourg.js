@@ -1,6 +1,6 @@
 g = new Dygraph(
     document.getElementById("graphdiv1"),
-    "csv_agg/world_luxembourg",
+    "csv_agg/world_lu",
     {
           labels: ['date', 'World', 'Luxembourg'],
       'Luxembourg': { axis: {} },

@@ -1,6 +1,6 @@
 g = new Dygraph(
     document.getElementById("graphdiv1"),
-    "csv_agg/belgium_netherlands_germany_luxembourg_france",
+    "csv_agg/be_ch_de_lu_fr_nl",
     {
       axes: {
               y: {
