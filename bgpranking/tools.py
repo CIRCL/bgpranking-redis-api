@@ -31,15 +31,20 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
                 rank = float(entry['rank']) -1
                 if result.get(entry['day']) is None:
                     result[entry['day']] = {}
-                if result[entry['day']].get('world') is None:
-                    result[entry['day']]['world'] = 0
-                result[entry['day']]['world'] += rank
+                if with_world:
+                    if result[entry['day']].get('world') is None:
+                        result[entry['day']]['world'] = 0
+                    result[entry['day']]['world'] += rank
                 for key, arg in kwargs.iteritems():
                     if asn in arg:
                         if result[entry['day']].get(key) is None:
                             result[entry['day']][key] = 0
                         result[entry['day']][key] += rank
-    fieldnames = ['world'] + kwargs.keys()
+    if with_world:
+        fieldnames = ['world']
+    else:
+        fieldnames = []
+    fieldnames += kwargs.keys()
     filename = os.path.join(output_agg_dir, '_'.join(fieldnames))
     with open(filename, 'w') as f:
         w = DictWriter(f, fieldnames= ['date'] + fieldnames)
