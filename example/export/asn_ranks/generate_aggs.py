@@ -33,7 +33,7 @@ if __name__ == '__main__':
             default=False)
     parser.add_argument('-cc', '--country_codes', nargs='+', type=str)
     parser.add_argument('-dcc', '--dump_country_codes', nargs='+', type=str)
-    parser.add_argument('-map' '--make_map', action='store_true', default=False)
+    parser.add_argument('-map', '--make_map', action='store_true', default=False)
     args = parser.parse_args()
     r = redis.Redis(unix_socket_path='./redis_export.sock')
 
@@ -57,8 +57,9 @@ if __name__ == '__main__':
             w = DictWriter(f, fieldnames= ['date'] + args.dump_country_codes)
             w.writeheader()
             for date in r.smembers('days'):
-                entries = r.hgetall(date)
-                entries.update({'date': date})
+                entries = {'date': date}
+                for cc in args.dump_country_codes:
+                    entries.update({cc: r.hget(date, cc)})
                 w.writerow(entries)
     elif args.make_map:
         tools.generate_dumps_for_worldmap(js_dir, agg_csv_dir)
