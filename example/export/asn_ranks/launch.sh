@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 while true; do
     echo ----- New Run -----
     date
@@ -39,12 +42,12 @@ while true; do
     # ------------------------------------------------------
 
     echo -n 'Dumping aggregations...'
-        python ./generate_aggs.py --dump_country_codes world lu
-        python ./generate_aggs.py --dump_country_codes be ch de lu fr nl
-        python ./generate_aggs.py --make_map
+    python ./generate_aggs.py --dump_country_codes world lu
+    python ./generate_aggs.py --dump_country_codes be ch de lu fr nl
+    python ./generate_aggs.py --make_map
     echo 'done.'
 
-    redis-cli -s ./redis_export.sock shutdown
+    #redis-cli -s ./redis_export.sock shutdown
     echo ----- End of Run. -----
     sleep 10000
 done

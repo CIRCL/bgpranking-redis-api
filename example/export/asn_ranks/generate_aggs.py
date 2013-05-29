@@ -42,9 +42,8 @@ if __name__ == '__main__':
         p = r.pipeline(False)
         [p.sadd('known_asns', csv_file) for csv_file in csv_files]
         p.execute()
-        print 'Number of asns:', len(csv_file)
-        return True
-    if args.country_codes is not None and len(args.country_codes) > 0:
+        print 'Number of asns:', len(csv_files)
+    elif args.country_codes is not None and len(args.country_codes) > 0:
         p = r.pipeline(False)
         p.sadd('countries', *args.country_codes)
         for cc in args.country_codes:
@@ -52,8 +51,7 @@ if __name__ == '__main__':
             asns = get_announces(url)
             p.sadd(cc, *asns)
         p.execute()
-        return True
-    if args.dump_country_codes is not None and len(args.dump_country_codes) > 0:
+    elif args.dump_country_codes is not None and len(args.dump_country_codes) > 0:
         filename = os.path.join(agg_csv_dir, '_'.join(args.dump_country_codes))
         with open(filename, 'w') as f:
             w = DictWriter(f, fieldnames= ['date'] + args.dump_country_codes)
@@ -62,8 +60,6 @@ if __name__ == '__main__':
                 entries = r.hgetall(date)
                 entries.update({'date': date})
                 w.writerow(entries)
-        return True
-    if args.make_map:
+    elif args.make_map:
         tools.generate_dumps_for_worldmap(js_dir, agg_csv_dir)
-        return True
 
