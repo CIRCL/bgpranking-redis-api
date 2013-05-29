@@ -182,6 +182,15 @@ class Master(object):
         return str(self.__init_template('trend'))
 
     @cherrypy.expose
+    def trend_benelux(self):
+        """
+            Print the trend of the benelux countries
+        """
+        self.__query_logging(cherrypy.request.remote.ip,
+            cherrypy.request.headers['User-Agent'], webpage='trend_benelux')
+        return str(self.__init_template('trend_benelux'))
+
+    @cherrypy.expose
     def map(self):
         """
             Print the worldmap
