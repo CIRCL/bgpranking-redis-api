@@ -23,7 +23,7 @@ rm -rf temp
 wget http://jvectormap.com/js/jquery-jvectormap-world-mill-en.js \
     -O jvectormap/jquery-jvectormap-world-mill-en.js
 
-JQUERY_VERSION='1.9.1'
+JQUERY_VERSION='1.10.0'
 wget http://code.jquery.com/jquery-${JQUERY_VERSION}.min.js -O jvectormap/jquery.js
 
 git add .
