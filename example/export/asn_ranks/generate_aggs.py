@@ -49,7 +49,8 @@ if __name__ == '__main__':
         for cc in args.country_codes:
             url = ripe_url.format(cc=cc)
             asns = get_announces(url)
-            p.sadd(cc, *asns)
+            if len(asns) > 0:
+                p.sadd(cc, *asns)
         p.execute()
     elif args.dump_country_codes is not None and len(args.dump_country_codes) > 0:
         filename = os.path.join(agg_csv_dir, '_'.join(args.dump_country_codes))
