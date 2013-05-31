@@ -143,7 +143,8 @@ class Master(object):
                 template.asn_descs = as_infos
                 template.current_sources = master_controler.get_last_seen_sources(asn)
                 template.desc_history = master_controler.get_asn_descriptions(asn)
-                template.position = position
+                template.position = position[0]
+                template.size = position[1]
                 if len(template.current_sources.keys()) > 0:
                     template.sources = template.current_sources.keys()
                 if ip_details is not None:

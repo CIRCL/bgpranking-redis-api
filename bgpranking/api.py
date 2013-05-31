@@ -677,7 +677,7 @@ def cache_get_position(asn, source = 'global', date = None):
                        all the sources
         :param date: Date of the information (default: last ranked day)
 
-        :rtype: Integer, position in the list.
+        :rtype: Integer, position in the list and size of the list.
 
             .. note:: if None, the zrank does not exists (source or date invalid)
     """
@@ -687,7 +687,8 @@ def cache_get_position(asn, source = 'global', date = None):
         date = h.get_default_date()
     histo_key = '{date}|{source}|rankv{ip_version}'.format(
             date = date, source = source, ip_version = c.ip_version)
-    return h.__history_db_cache.zrevrank(histo_key, asn)
+    return h.__history_db_cache.zrevrank(histo_key, asn), \
+            h.__history_db_cache.zcard(histo_key)
 
 
 def cache_get_top_asns(source = 'global', date = None, limit = 100,
