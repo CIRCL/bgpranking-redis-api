@@ -49,6 +49,11 @@
             #end for
           </ul>
           #end if
+          #if position is not None
+            <p>
+              The $date, $asn is $position in $source list.
+            </p>
+          #end if
           #if len($desc_history) > 0
           Over time, this AS ($asn) had following descriptions:
           <ul>

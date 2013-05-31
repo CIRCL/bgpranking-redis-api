@@ -46,6 +46,10 @@ def get_as_infos(asn, date = None, sources = None):
     if response is None or response.get(asn) is None:
         return None, None
     to_return = []
+    if type(sources) == type(list()):
+        position = None
+    else:
+        position = bgpranking.cache_get_position(asn, sources, date)
     for key, entry in response[asn].iteritems():
         if key == 'clean_blocks':
             to_return += [[descr[0][1], block, 0, '', 0]
@@ -55,7 +59,7 @@ def get_as_infos(asn, date = None, sources = None):
         else:
             to_return.append([entry['description'], key, entry['nb_of_ips'],
                 ', '.join(entry['sources']), 1 + entry['rank']])
-    return response['asn_description'], sorted(to_return,
+    return response['asn_description'], position, sorted(to_return,
             key=lambda element: (element[4], element[2]), reverse = True)
 
 def get_ip_info(asn, block, date = None, sources = None):

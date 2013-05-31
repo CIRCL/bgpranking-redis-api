@@ -666,6 +666,30 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
         asn_descr = ''
     return asn, asn_descr, date, source, h.__history_db_cache.zscore(histo_key, asn)
 
+def cache_get_position(asn, source = 'global', date = None):
+    """
+        **From the temporary database**
+
+        Get the position of the ASN in the zrank.
+
+        :param asn: Autonomous System Number
+        :param source: Source to use. global is the aggregated view for
+                       all the sources
+        :param date: Date of the information (default: last ranked day)
+
+        :rtype: Integer, position in the list.
+
+            .. note:: if None, the zrank does not exists (source or date invalid)
+    """
+    if source is None:
+        source = 'global'
+    if date is None:
+        date = h.get_default_date()
+    histo_key = '{date}|{source}|rankv{ip_version}'.format(
+            date = date, source = source, ip_version = c.ip_version)
+    return h.__history_db_cache.zrevrank(histo_key, asn)
+
+
 def cache_get_top_asns(source = 'global', date = None, limit = 100,
         with_sources = True):
     """
