@@ -715,8 +715,7 @@ def cache_get_top_asns(source = 'global', date = None, limit = 100,
     histo_key = '{date}|{histo_key}|rankv{ip_version}'.format(date = date,
                        histo_key = source, ip_version = c.ip_version)
     to_return = {'source': source, 'date': date,
-            'size_list': h.__history_db_cache.zcard(), 'top_list': []}
-    print histo_key
+            'size_list': h.__history_db_cache.zcard(histo_key), 'top_list': []}
     ranks = h.__history_db_cache.zrevrange(histo_key, 0, limit, True)
     if ranks is None:
         return to_return

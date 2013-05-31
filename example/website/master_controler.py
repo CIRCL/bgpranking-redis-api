@@ -10,7 +10,7 @@
 
 import bgpranking
 
-def prepare_index(source, date, limit=50):
+def prepare_index(source, date, limit=100):
     response = bgpranking.cache_get_top_asns(source, date, limit)
     if len(response['top_list']) != 0:
         return [(rank[0], rank[1], 1 + rank[2], ', '.join(sources))
