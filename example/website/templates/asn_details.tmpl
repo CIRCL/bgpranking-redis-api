@@ -40,7 +40,12 @@
     <br/>
     #if $asn is not None
         #if len($current_sources) > 0
-          This AS ($asn) is known in the following lists (last time seen):
+          This AS ($asn) is known in the following lists (last time seen)
+          #if $position is not None
+            at position <b>$position</b> in the current top list:
+          #else
+            :
+          #end if
           <ul>
             #for $source, $date in $current_sources.iteritems()
               <li>
@@ -48,11 +53,6 @@
               </li>
             #end for
           </ul>
-          #end if
-          #if position is not None
-            <p>
-              The $date, $asn is $position in $source list.
-            </p>
           #end if
           #if len($desc_history) > 0
           Over time, this AS ($asn) had following descriptions:
