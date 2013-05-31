@@ -112,8 +112,9 @@ class Master(object):
         self.__query_logging(cherrypy.request.remote.ip,
             cherrypy.request.headers['User-Agent'], webpage='index',
             date=date, source=source)
-        histo = master_controler.prepare_index(source, date)
+        histo, list_size = master_controler.prepare_index(source, date)
         template = self.__init_template('index_asn', source, date)
+        template.list_size = list_size
         template.histories = histo
         return str(template)
 

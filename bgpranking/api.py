@@ -666,7 +666,7 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
         asn_descr = ''
     return asn, asn_descr, date, source, h.__history_db_cache.zscore(histo_key, asn)
 
-def cache_get_top_asns(source = 'global', date = None, limit = 50,
+def cache_get_top_asns(source = 'global', date = None, limit = 100,
         with_sources = True):
     """
         **From the temporary database**
@@ -689,6 +689,7 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
                     {
                         'source': source,
                         'date': date,
+                        'size_list': size,
                         'top_list':
                             [
                                 (
@@ -708,12 +709,13 @@ def cache_get_top_asns(source = 'global', date = None, limit = 50,
     if date is None:
         date = h.get_default_date()
     if limit is None:
-        limit = 50
+        limit = 100
     if with_sources is None:
         with_sources = True
     histo_key = '{date}|{histo_key}|rankv{ip_version}'.format(date = date,
                        histo_key = source, ip_version = c.ip_version)
-    to_return = {'source': source, 'date': date, 'top_list': []}
+    to_return = {'source': source, 'date': date,
+            'size_list': h.__history_db_cache.zcard(), 'top_list': []}
     print histo_key
     ranks = h.__history_db_cache.zrevrange(histo_key, 0, limit, True)
     if ranks is None:
