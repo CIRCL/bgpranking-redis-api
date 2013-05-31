@@ -6,7 +6,7 @@ import os
 import urllib2
 from bgpranking import tools
 from csv import DictWriter
-
+import datetime
 
 import argparse
 import glob
@@ -17,7 +17,7 @@ csv_dir = os.path.join('..', '..', 'website', 'data', 'csv')
 agg_csv_dir = os.path.join('..', '..','website', 'data', 'csv_agg')
 js_dir = os.path.join('..', '..', 'website', 'data', 'js')
 
-ripe_url = 'https://stat.ripe.net/data/country-resource-list/data.json?resource={cc}'
+ripe_url = 'https://stat.ripe.net/data/country-resource-list/data.json?resource={cc}&time={day}'
 
 def get_announces(ripe_url):
     handle = urllib2.urlopen(ripe_url, timeout=10)
@@ -47,10 +47,17 @@ if __name__ == '__main__':
         p = r.pipeline(False)
         p.sadd('countries', *args.country_codes)
         for cc in args.country_codes:
-            url = ripe_url.format(cc=cc)
-            asns = get_announces(url)
-            if len(asns) > 0:
+            date = datetime.date.today()
+            counter = 0
+            while True:
+                date = date - datetime.timedelta(days=counter)
+                url = ripe_url.format(cc=cc, day=date.isoformat())
+                asns = get_announces(url)
+                if len(asns) < 5:
+                    counter += 1
+                    continue
                 p.sadd(cc, *asns)
+                break
         p.execute()
     elif args.dump_country_codes is not None and len(args.dump_country_codes) > 0:
         filename = os.path.join(agg_csv_dir, '_'.join(args.dump_country_codes))
