@@ -19,8 +19,7 @@ if __name__ == '__main__':
         if len(ip_descs.get(block)) != 0:
             p = r.pipeline(False)
             for ip, sources in ip_descs.get(block).iteritems():
-                p.zincrby('ips', ip, sum([int(weights[s])
-                    for s in sources]))
+                p.zincrby('ips', ip, sum([float(weights[s]) for s in sources]))
                 p.hmset(ip, {'asn': asn, 'block':block,
                     'sources': '|'.join(sources)})
             p.execute()

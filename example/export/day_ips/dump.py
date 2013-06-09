@@ -16,7 +16,7 @@ if __name__ == '__main__':
         p = r.pipeline(False)
         [p.zscore('ips', ip) for ip in ips]
         weights = p.execute()
-        [f.write(','.join(iw) + '\n') for iw in zip(ips, weights)]
+        [f.write(','.join(map(str, iw)) + '\n') for iw in zip(ips, weights)]
     with open('full', 'wb') as f:
         w = csv.writer(f)
         ips = r.zrange('ips', 0, -1)
