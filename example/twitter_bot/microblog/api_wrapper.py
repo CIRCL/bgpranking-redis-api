@@ -22,10 +22,10 @@ username = "bgpranking"
 
 def __prepare():
     global api
-    api = twitter.Api(consumer_key=twitter_customer_key,
+    api = twitter.Api(consumer_key=twitter_consumer_key,
             consumer_secret=twitter_consumer_secret,
-            access_token_key=twitter_access_token_key,
-            access_token_secret=twitter_access_token_secret)
+            access_token_key=twitter_access_key,
+            access_token_secret=twitter_access_secret)
 
 def prepare_string():
     to_return = 'Top Ranking {date}\n'.format(
