@@ -4,10 +4,14 @@
 from csv import DictReader
 import redis
 import os
+import sys
 
 if __name__ == '__main__':
     r = redis.Redis(unix_socket_path='./redis_export.sock')
     countries = r.smembers('countries')
+    if len(countries) == 0:
+        print 'No country codes availables, breaking.'
+        sys.exit()
     cached_asns = {}
     for cc in countries:
         cached_asns[cc] = r.smembers(cc)
