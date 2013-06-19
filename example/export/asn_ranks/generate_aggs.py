@@ -55,10 +55,10 @@ if __name__ == '__main__':
             while True:
                 date = date - datetime.timedelta(days=counter)
                 url = ripe_url.format(cc=cc, day=date.isoformat())
+                asns = get_announces(url)
                 if asns is None:
                     print 'Unable to download the list of ASNs. Abording.'
                     sys.exit()
-                asns = get_announces(url)
                 if len(asns) < 5:
                     counter += 1
                     continue
