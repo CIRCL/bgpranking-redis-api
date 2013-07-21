@@ -44,7 +44,7 @@ def get_comparator_metatada(asns_string):
 def get_as_infos(asn, date = None, sources = None):
     response = bgpranking.get_asn_descs(asn, date, sources)
     if response is None or response.get(asn) is None:
-        return None, None
+        return None, None, None
     to_return = []
     if type(sources) == type(list()):
         position = None
