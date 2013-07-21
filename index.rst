@@ -18,7 +18,8 @@ Code Documentation
     :maxdepth: 1
 
     bgpranking/Redis_API
-    example/api_web/JSON_API
+    example/api_web/server/JSON_API
+    example/api_web/client/bgpranking_web/JSON_API_Python
 
 
 Indices and tables
