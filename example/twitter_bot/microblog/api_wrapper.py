@@ -38,24 +38,17 @@ def prepare_string():
     return to_return
 
 def post_new_top_ranking():
-    found = False
     posted = False
     today = datetime.date.today()
-    i = 1
-    while not found:
-        if i>= 20:
+    status = api.GetUserTimeline("bgpranking", count=100)
+    for s in status:
+        t = s.text
+        if t is not None and t.startswith('Top Ranking'):
+            most_recent_post = dateutil.parser.parse(
+                    s.created_at).replace(tzinfo=None).date()
+            if most_recent_post < today:
+                posted = True
+                to_post = prepare_string()
+                api.PostUpdate(to_post)
             break
-        status = api.GetUserTimeline("bgpranking", page=i)
-        i += 1
-        for s in status:
-            t = s.text
-            if t is not None and t.startswith('Top Ranking'):
-                found = True
-                most_recent_post = dateutil.parser.parse(
-                        s.created_at).replace(tzinfo=None).date()
-                if most_recent_post < today:
-                    posted = True
-                    to_post = prepare_string()
-                    api.PostUpdate(to_post)
-                break
     return posted
