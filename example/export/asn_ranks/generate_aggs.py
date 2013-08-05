@@ -53,13 +53,13 @@ if __name__ == '__main__':
             date = datetime.date.today()
             counter = 0
             while True:
-                date = date - datetime.timedelta(days=counter)
-                url = ripe_url.format(cc=cc, day=date.isoformat())
+                if counter >= 10:
+                    sys.exit(1)
+                cur_date = date - datetime.timedelta(days=counter)
+                url = ripe_url.format(cc=cc, day=cur_date.isoformat())
                 asns = get_announces(url)
-                if asns is None:
-                    print 'Unable to download the list of ASNs. Abording.'
-                    sys.exit()
-                if len(asns) < 5:
+                if asns is None or len(asns) < 5:
+                    #print 'Unable to download the list of ASNs. Abording.'
                     counter += 1
                     continue
                 p.sadd(cc, *asns)
@@ -78,4 +78,5 @@ if __name__ == '__main__':
                 w.writerow(entries)
     elif args.make_map:
         tools.generate_dumps_for_worldmap(js_dir, agg_csv_dir)
+    sys.exit(0)
 
