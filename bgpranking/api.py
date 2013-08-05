@@ -88,10 +88,10 @@ def get_ip_info(ip, days_limit = None):
                     continue
                 elif last_date >= test_date and first_date <= test_date:
                     # Changes within the interval
-                    valid_descriptions.append([date, descr])
+                    valid_descriptions.append([date.isoformat(), descr])
                 elif first_date > test_date:
                     # get the most recent change befrore the interval
-                    valid_descriptions.append([date, descr])
+                    valid_descriptions.append([date.isoformat(), descr])
                     break
         else:
             #FIXME: error/information
@@ -100,10 +100,10 @@ def get_ip_info(ip, days_limit = None):
             # fallback, use the oldest description.
             date = desc_history[-1][0].astimezone(tz.tzutc()).date()
             descr = desc_history[-1][1]
-            valid_descriptions.append([date, descr])
+            valid_descriptions.append([date.isoformat(), descr])
         entry = {}
         entry['asn'] = asn
-        entry['interval'] = [first_date, last_date]
+        entry['interval'] = [first_date.isoformat(), last_date.isoformat()]
         entry['block'] = block
         entry['timestamp'] = get_first_seen(asn, block)
         entry['descriptions'] = valid_descriptions
