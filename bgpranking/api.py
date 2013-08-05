@@ -356,7 +356,8 @@ def get_block_descriptions(asn, block):
 
                     [asn, block, [(ts, descr), ...]]
     """
-    ts_descr = h.__global_db.hgetall('|'.join([asn, block]))
+    ts_descr = \
+        h.__global_db.hgetall('{}|{}'.format(asn, block))
     timestamps = sorted(ts_descr.keys(), reverse=True)
     descriptions = []
     for t in timestamps:
@@ -467,7 +468,7 @@ def get_asn_descs(asn, date = None, sources = None):
         asn, block, ts_descr = get_block_descriptions(asn, ip_block)
         # Find out if the block has been seen these day
         p = h.__global_db.pipeline(False)
-        [p.scard('|'.join([asn, ip_block, date, source])) for source in sources]
+        [p.scard('{}|{}|{}|{}'.format(asn, ip_block, date, source)) for source in sources]
         ips_by_sources = p.execute()
         nb_of_ips = sum(ips_by_sources)
 
@@ -756,7 +757,7 @@ def cache_get_top_asns(source = 'global', date = None, limit = 100,
         to_return['top_list'] = temp_rank
     else:
         p = h.__history_db_cache.pipeline(False)
-        [p.smembers('|'.join([date, rank[0]])) for rank in temp_rank]
+        [p.smembers('{}|{}'.format(date, rank[0])) for rank in temp_rank]
         to_return['top_list'] = list(zip(temp_rank, p.execute()))
     return to_return
 
