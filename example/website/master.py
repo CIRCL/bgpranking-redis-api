@@ -17,6 +17,7 @@ import StringIO
 from csv import DictReader
 import urllib2
 import json
+from cherrypy import _cperror
 
 import master_controler
 from pubsublogger import publisher
@@ -110,8 +111,8 @@ class Master(object):
         source = self.__none_if_empty(source)
         date = self.__none_if_empty(date)
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='index',
-            date=date, source=source)
+            cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+            webpage='index', date=date, source=source)
         histo, list_size = master_controler.prepare_index(source, date)
         template = self.__init_template('index_asn', source, date)
         template.list_size = list_size
@@ -129,8 +130,9 @@ class Master(object):
         if asn is None:
             return self.index(source, date)
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='asn_details',
-            date=date, source=source, asn=asn, asn_details = ip_details)
+            cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+            webpage='asn_details', date=date, source=source, asn=asn,
+            asn_details = ip_details)
         ip_details = self.__none_if_empty(ip_details)
         template = self.__init_template('asn_details', source, date)
         asn = asn.lstrip('AS')
@@ -162,8 +164,8 @@ class Master(object):
         """
         asns = self.__none_if_empty(asns)
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='comparator',
-            compared_asns=asns)
+            cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+            webpage='comparator', compared_asns=asns)
         template = self.__init_template('comparator')
         template.asns = asns
         if asns is not None:
@@ -180,9 +182,11 @@ class Master(object):
         """
             Print the trend World vs Luxembourg
         """
-        self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='trend')
-        return str(self.__init_template('trend'))
+        return self.trend_benelux()
+        #self.__query_logging(cherrypy.request.remote.ip,
+        #    cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+        #    webpage='trend')
+        #return str(self.__init_template('trend'))
 
     @cherrypy.expose
     def trend_benelux(self):
@@ -190,7 +194,8 @@ class Master(object):
             Print the trend of the benelux countries
         """
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='trend_benelux')
+            cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+            webpage='trend_benelux')
         return str(self.__init_template('trend_benelux'))
 
     @cherrypy.expose
@@ -199,14 +204,15 @@ class Master(object):
             Print the worldmap
         """
         self.__query_logging(cherrypy.request.remote.ip,
-            cherrypy.request.headers['User-Agent'], webpage='map')
+            cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
+            webpage='map')
         return str(self.__init_template('map'))
 
     @cherrypy.expose
     def ip_lookup(self, ip = None):
         ip = self.__none_if_empty(ip)
         self.__query_logging(cherrypy.request.remote.ip,
-                cherrypy.request.headers['User-Agent'],
+                cherrypy.request.headers.get('User-Agent', 'Empty User-Agent'),
                 webpage='ip_lookup', ip_lookup=ip)
         template = self.__init_template('ip_lookup')
         template.ip = ip
@@ -214,12 +220,16 @@ class Master(object):
         template.history = history
         return str(template)
 
-
 def error_page_404(status, message, traceback, version):
     """
         Display an error if the page does not exists
     """
     return "Error %s - This page does not exist." % status
+
+def handle_error():
+    cherrypy.response.status = 500
+    cherrypy.response.body = ["<html><body>Sorry, an error occured</body></html>"]
+    publisher.error(_cperror.format_exc())
 
 if __name__ == "__main__":
     config = ConfigParser.RawConfigParser()
@@ -229,4 +239,5 @@ if __name__ == "__main__":
     website = Master()
 
     cherrypy.config.update({'error_page.404': error_page_404})
+    cherrypy.config.update({'request.error_response': handle_error})
     cherrypy.quickstart(website, config = config.get('web','config_file'))
