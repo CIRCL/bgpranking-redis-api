@@ -25,10 +25,19 @@ try:
 except:
     use_ip2asn = False
 
+
+logging = True
+try:
+    if logging:
+        from pubsublogger import publisher
+        publisher.channel = 'API_Redis'
+except:
+    logging = False
+
 def get_asn_descriptions(asn):
     if not use_asnhistory:
-        # FIXME: add error message
-        return []
+        publisher.debug('ASN History not enabled.')
+        return [datetime.date.today(), 'ASN History not enabled.']
     desc_history = asnhistory.get_all_descriptions(asn)
     to_return = []
     for date, descr in desc_history:
@@ -72,7 +81,8 @@ def get_ip_info(ip, days_limit = None):
         days_limit = 750
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
     if not use_ip2asn:
-        #FIXME: error msg
+        publisher.debug('IP2ASN not enabled.')
+        to_return['error'] = 'IP2ASN not enabled.'
         return to_return
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
@@ -94,8 +104,9 @@ def get_ip_info(ip, days_limit = None):
                     valid_descriptions.append([date.isoformat(), descr])
                     break
         else:
-            #FIXME: error/information
-            pass
+            publisher.debug('ASN History not enabled.')
+            valid_descriptions = [datetime.date.today().isoformat(),
+                    'ASN History not enabled.']
         if len(valid_descriptions) == 0:
             if len(desc_history) != 0:
                 # fallback, use the oldest description.
@@ -104,8 +115,11 @@ def get_ip_info(ip, days_limit = None):
                 valid_descriptions.append([date.isoformat(), descr])
             else:
                 # No history found for this ASN
-                # FIXME: error, should not happen
-                valid_descriptions.append(['0000-00-00', "No history found for this IP address in this AS."])
+                publisher.error(\
+                        'Unable to find the ASN description of {}. IP address: {}. ASN History might be down.'.\
+                        format(asn, ip))
+                valid_descriptions.append(['0000-00-00',
+                    'No ASN description has been found.'])
         entry = {}
         entry['asn'] = asn
         entry['interval'] = [first_date.isoformat(), last_date.isoformat()]
@@ -121,9 +135,8 @@ def get_last_seen_sources(asn, dates_sources):
         Return a dictionary conteining the last date a particular ASN
         has been seen by a source.
     """
-    to_return = {}
     if not h.asn_exists(asn):
-        return to_return
+        return {}
     string = '{asn}|{date}|{source}|rankv{ip_version}'
     s_dates = dates_sources.keys()
     s_dates.sort(reverse=True)
@@ -206,17 +219,12 @@ def get_all_ranks_single_asn(asn, dates_sources,
         impacts = h.get_all_weights(date)
         if len(sources) > 0:
             to_return[date] = {}
+            zipped_sources_rank = zip(sources, ranks[i])
             if with_details_sources:
-                to_return[date].update({'details': list(zip(sources, ranks[i]))})
-            if use_asnhistory:
-                to_return[date].update(
-                        {'description': asnhistory.get_last_description(asn)})
-            else:
-                #FIXME: error msg
-                to_return[date].update(
-                        {'description': ''})
-            to_return[date].update({'total' : 0})
-            for s, r in zip(sources, ranks[i]):
+                to_return[date]['details'] = list(zipped_sources_rank)
+            to_return[date]['description'] = __asn_desc_via_history(asn)
+            to_return[date]['total'] = 0
+            for s, r in zipped_sources_rank:
                 if r is not None:
                     to_return[date]['total'] += float(r) * float(impacts[s])
             i += 1
@@ -361,8 +369,7 @@ def get_block_descriptions(asn, block):
 
                     [asn, block, [(ts, descr), ...]]
     """
-    ts_descr = \
-        h.__global_db.hgetall('{}|{}'.format(asn, block))
+    ts_descr = h.__global_db.hgetall('{}|{}'.format(asn, block))
     timestamps = sorted(ts_descr.keys(), reverse=True)
     descriptions = []
     for t in timestamps:
@@ -398,6 +405,19 @@ def get_all_blocks_descriptions(asn):
         blocks_descriptions[block] = descriptions
     return asn, blocks_descriptions
 
+def __asn_desc_via_history(asn):
+    if use_asnhistory:
+        asn_descr = asnhistory.get_last_description(asn)
+        if asn_descr is None:
+            # The ASN has no descripion in the database
+            publisher.error(\
+                    'Unable to find the ASN description of {}. ASN History might be down.'.\
+                    format(asn))
+            asn_descr = 'No ASN description has been found.'
+    else:
+        publisher.debug('ASN History not enabled.')
+        asn_descr = 'ASN History not enabled.'
+    return asn_descr
 
 def get_asn_descs(asn, date = None, sources = None):
     """
@@ -459,14 +479,7 @@ def get_asn_descs(asn, date = None, sources = None):
         if type(sources) is not type([]):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
-    if use_asnhistory:
-        asn_descr = asnhistory.get_last_description(asn)
-        if asn_descr is None:
-            # The ASN has no descripion in the database
-            asn_descr = ''
-    else:
-        #FIXME: error msg
-        asn_descr = ''
+    asn_descr = __asn_desc_via_history(asn)
     to_return = {'date': date, 'sources': sources, 'asn': asn,
             'asn_description': asn_descr, asn: {}}
 
@@ -549,11 +562,7 @@ def get_ips_descs(asn, block, date = None, sources = None):
         if type(sources) is not type([]):
             sources = [sources]
         sources = list(day_sources.intersection(set(sources)))
-    if use_asnhistory:
-        asn_descr = asnhistory.get_last_description(asn)
-    else:
-        #FIXME: error msg
-        asn_descr = ''
+    asn_descr = __asn_desc_via_history(asn)
     to_return = {'date': date, 'sources': sources, 'asn': asn,
             'asn_description': asn_descr, 'block': block, block: {}}
     asn_block_key = '{asn}|{b}|{date}|'.format(asn=asn, b=block, date=date)
@@ -668,11 +677,7 @@ def cache_get_daily_rank(asn, source = 'global', date = None):
         date = h.get_default_date()
     histo_key = '{date}|{source}|rankv{ip_version}'.format(
             date = date, source = source, ip_version = c.ip_version)
-    if use_asnhistory:
-        asn_descr = asnhistory.get_last_description(asn)
-    else:
-        #FIXME: error msg
-        asn_descr = ''
+    asn_descr = __asn_desc_via_history(asn)
     return asn, asn_descr, date, source, h.__history_db_cache.zscore(histo_key, asn)
 
 def cache_get_position(asn, source = 'global', date = None):
@@ -755,11 +760,7 @@ def cache_get_top_asns(source = 'global', date = None, limit = 100,
         return to_return
     temp_rank = []
     for asn, rank in ranks:
-        if use_asnhistory:
-            asn_descr = asnhistory.get_last_description(asn)
-        else:
-            #FIXME: error msg
-            asn_descr = ''
+        asn_descr = __asn_desc_via_history(asn)
         temp_rank.append((asn, asn_descr, rank))
     if not with_sources:
         to_return['top_list'] = temp_rank
