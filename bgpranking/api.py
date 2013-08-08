@@ -97,10 +97,15 @@ def get_ip_info(ip, days_limit = None):
             #FIXME: error/information
             pass
         if len(valid_descriptions) == 0:
-            # fallback, use the oldest description.
-            date = desc_history[-1][0].astimezone(tz.tzutc()).date()
-            descr = desc_history[-1][1]
-            valid_descriptions.append([date.isoformat(), descr])
+            if len(desc_history) != 0:
+                # fallback, use the oldest description.
+                date = desc_history[-1][0].astimezone(tz.tzutc()).date()
+                descr = desc_history[-1][1]
+                valid_descriptions.append([date.isoformat(), descr])
+            else:
+                # No history found for this ASN
+                # FIXME: error, should not happen
+                valid_descriptions.append(['0000-00-00', "No history found for this IP address in this AS."])
         entry = {}
         entry['asn'] = asn
         entry['interval'] = [first_date.isoformat(), last_date.isoformat()]
@@ -456,6 +461,9 @@ def get_asn_descs(asn, date = None, sources = None):
         sources = list(day_sources.intersection(set(sources)))
     if use_asnhistory:
         asn_descr = asnhistory.get_last_description(asn)
+        if asn_descr is None:
+            # The ASN has no descripion in the database
+            asn_descr = ''
     else:
         #FIXME: error msg
         asn_descr = ''
