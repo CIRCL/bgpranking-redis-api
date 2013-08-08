@@ -45,8 +45,11 @@ def get_all_weights(date = None):
     if date is None:
         date = get_default_date()
     sources = daily_sources([date])
-    impacts = __config_db.mget(sources)
-    return dict(zip(sources, impacts))
+    to_return = {}
+    if len(sources) > 0:
+        impacts = __config_db.mget(sources)
+        to_return = dict(zip(sources, impacts))
+    return to_return
 
 def daily_sources(dates):
     """
@@ -165,11 +168,11 @@ def asn_exists(asn):
     """
     return __global_db.exists(asn)
 
-def get_default_date():
+def get_default_date(delta_days=1):
     """
         Get the latest ranked day.
     """
-    return __get_default_date_raw().isoformat()
+    return __get_default_date_raw(delta_days).isoformat()
 
 def __prepare():
     global __global_db
@@ -186,12 +189,16 @@ def __prepare():
             db = c.redis_cached_db_history, host = c.redis_hostname)
 
 
-def __get_default_date_raw():
+def __get_default_date_raw(delta_days=1):
     """
         Get the default date displayed on the website.
     """
-    timestamp = __history_db.get('latest_ranking')
-    delta = datetime.timedelta(days=1)
+    delta = datetime.timedelta(days=delta_days)
+    try:
+        timestamp = __history_db.get('latest_ranking')
+    except:
+        # TODO: hotfix, can be better
+        timestamp = None
     if timestamp is not None:
         default_date_raw = parser.parse(timestamp.split()[0]).date() - delta
     else:

@@ -1,0 +1,28 @@
+#from templates.master import master
+#extends master
+
+#attr title = 'BGP Ranking - World/Luxembourg trend'
+
+#block menu
+#end block menu
+
+#block main_content
+<script type="text/javascript" src="dygraph/dygraph-combined.js"></script>
+<p>Relational graph between the global worldwide security trend and the Luxemburg one.</p>
+<p>Notes:
+<ul>
+    <li>The data are <a href="csv_agg/world_lu"
+      type="text/comma-separated-values">available to download</a>.</li>
+    <li>The scales are logarithmic.</li>
+    <li>The scales of the global tend (left, green) and the Luxembourg one (right, blue) are different</li>
+    <li>The data used are public and subject to false positive AND false negative</li>
+    <li>The graph is published for information purpose only</li>
+    <li>Do not hesitate to <a href="http://circl.lu/contact/">ask us</a> if you
+      have questions about this graph</li>
+</ul>
+</p>
+<div id="graphdiv1" style="width:1280px; height:768px;border: 1px solid black;"></div>
+<script type="text/javascript" src="js/world_luxembourg.js"></script>
+
+#end block main_content
+

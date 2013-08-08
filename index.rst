@@ -1,10 +1,10 @@
-.. BGP Ranking Python API documentation master file, created by
-   sphinx-quickstart on Mon Nov 26 16:03:33 2012.
+.. BGP Ranking APIs documentation master file, created by
+   sphinx-quickstart on Sun Jul 21 13:35:42 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to BGP Ranking Python API's documentation!
-==================================================
+Welcome to BGP Ranking APIs's documentation!
+============================================
 
 Contents:
 
@@ -17,7 +17,9 @@ Code Documentation
 .. toctree::
     :maxdepth: 1
 
-    code/API
+    bgpranking/Redis_API
+    example/api_web/server/JSON_API
+    example/api_web/client/bgpranking_web/JSON_API_Python
 
 
 Indices and tables

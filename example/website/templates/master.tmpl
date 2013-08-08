@@ -1,0 +1,52 @@
+#attr error = None
+#attr title = 'Master'
+
+#attr asn = None
+#attr source = None
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>$title</title>
+    <link rel="stylesheet" type="text/css" href="${css_file}"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <div id="header" class="header">
+        <div id="logo">
+            <a href="index"><img src="${logo}" alt="BGP Ranking Logo"/></a>
+        </div>
+        <div id="banner" align="center">
+            <img src="${banner}" alt="BGP Ranking Banner"/>
+        </div>
+    </div>
+    <div id="body" class="body">
+       <h1>BGP Ranking</h1>
+            <div id="leftbox">
+                <div id="nav">
+                    <ul>
+                      <li><a href="index">Index - ASN lookup</a></li>
+                      <li><a href="ip_lookup">IP lookup</a></li>
+                      <li><a href="comparator">Compare a list of ASNs</a></li>
+                      <li><a href="trend">Trend World-Luxembourg</a></li>
+                      <li><a href="trend_benelux">Trend Wide Benelux</a></li>
+                      <li><a href="map">World Map</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="content">
+                #block menu
+                    Menu Content
+                #end block menu
+                #if $error is not None
+                    <div class="error">$error</div>
+                #end if
+                #block main_content
+                    Main Content
+                #end block main_content
+            </div>
+    </div>
+  </body>
+</html>
+

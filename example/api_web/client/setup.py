@@ -8,15 +8,15 @@ except ImportError:
        from distutils.command.build_py import build_py
 
 setup(
-    name='bgpranking',
+    name='bgpranking_web',
     version='1.0',
-    description='API to access the Redis database of a BGP Ranking instance.',
+    description='Library to access the BGP Ranking REST API.',
     url='https://github.com/Rafiot/bgpranking-py.git',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
     maintainer_email='raphael.vinot@circl.lu',
-    packages=['bgpranking'],
+    packages=['bgpranking_web'],
     cmdclass = {'build_py': build_py},
     license='GNU GPLv3',
     long_description=open('README.md').read(),

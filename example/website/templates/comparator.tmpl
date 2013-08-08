@@ -1,0 +1,69 @@
+#import cgi
+#from master import merge_csvs
+#from templates.master import master
+#extends master
+
+#attr title = 'BGP Ranking - ASN Comparator'
+#attr asns = None
+#attr js_comparator = None
+
+#block menu
+#end block menu
+
+#block main_content
+    List of ASNs, separated with a blank:
+    <form method="get" action="comparator">
+      <div>
+        <input type="text" name="asns" value="$asns"/>
+        <input type="submit" value="Submit"/>
+      </div>
+    </form> <br/>
+    <script type="text/javascript" src="dygraph/dygraph-combined.js"></script>
+    <div id="comparator" style="width:900px; height:600px;border: 1px solid black;"></div>
+    <script type="text/javascript">
+      g = new Dygraph(
+          document.getElementById("comparator"),
+          $merge_csvs($asns_json),
+          {
+            axes: {
+                    y:{
+                        valueFormatter: function(y) {
+                            return y.toPrecision(8);
+                            },
+                        axisLabelFormatter: function(y) {
+                            return y.toPrecision(3);
+                            },
+                       }
+                  },
+            legend: 'always',
+            rollPeriod: 7,
+            showRoller: true,
+            logscale : true,
+            yAxisLabelWidth: 50,
+            xAxisLabelWidth: 60
+            });
+    </script>
+    <ul>
+      #if $asns_details is not None
+        #for asn, blocks_descriptions in $asns_details
+      <li>
+        <a href="asn_details?asn=$asn">$asn</a> (<a href="csv/$asn" type="text/comma-separated-values">csv</a>)
+        <ul>
+          #for block, ts_descr in $blocks_descriptions.iteritems()
+          <li>
+          <a href="asn_details?asn=${asn};ip_details=${block}">$block</a>:
+            <ul>
+            #for ts, descr in ts_descr
+              <li>$cgi.escape($descr, True): $ts</li>
+            #end for
+            </ul>
+          </li>
+          #end for
+        </ul>
+      </li>
+        #end for
+      #end if
+    </ul>
+
+
+#end block main_content

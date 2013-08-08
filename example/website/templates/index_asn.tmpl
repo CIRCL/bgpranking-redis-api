@@ -1,0 +1,61 @@
+#import cgi
+#from templates.master import master
+#extends master
+
+#attr title = 'BGP Ranking - Daily top ASN'
+
+#block menu
+    <form method="get" action="/asn_details">
+        <div>
+            <input type="text" name="asn" value="$asn"/>
+            <select name="source">
+                <option value="">All the sources</option>
+                #for $s in $sources
+                    #if $source == $s
+                        <option value="${s}" selected>${s}</option>
+                    #else
+                        <option value="${s}">${s}</option>
+                    #end if
+                #end for
+            </select>
+            <select name="date">
+                <option value="">Choose a date</option>
+                #for $d in $dates
+                    #if $date == $d
+                        <option value="${d}" selected>${d}</option>
+                    #else
+                        <option value="${d}">${d}</option>
+                    #end if
+                #end for
+            </select>
+            <input type="submit" value="Submit"/>
+        </div>
+    </form>
+#end block menu
+
+#block main_content
+  <p>
+    There is <b>$list_size</b> entries in the list of asns with malicious content.
+    The top 100 is printed on this page.
+  </p>
+    <table id="hor-minimalist-a">
+        <thead>
+            <tr>
+                <th scope="col" >ASN</th>
+                <th scope="col" >Description</th>
+                <th scope="col" >Rank</th>
+                <th scope="col" >Source(s)</th>
+            </tr>
+        </thead>
+        #if $histories is not None
+          #for $history in $histories
+          <tr>
+              <td><a href="/asn_details?date=${date};source=${source};asn=${history[0]}">${history[0]}</a></td>
+              <td>$cgi.escape($history[1], True)</td>
+              <td>$history[2]</td>
+              <td>$history[3]</td>
+          </tr>
+          #end for
+        #end if
+    </table>
+#end block main_content
