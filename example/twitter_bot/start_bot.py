@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     sleep_timer = 3600
 
-    publisher.channel = 'Ranking'
+    publisher.channel = 'API_Twitter'
 
     while 1:
         try:
