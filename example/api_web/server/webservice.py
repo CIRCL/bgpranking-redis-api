@@ -21,8 +21,20 @@ Redis API (:class:`bgpranking.api`)
 
 
 from flask import Flask, json, request
+import StringIO
+import csv
 
 import bgpranking
+
+
+logging = True
+try:
+    if logging:
+            from pubsublogger import publisher
+            publisher.channel = 'API_Web'
+except:
+    logging = False
+
 
 app = Flask(__name__)
 app.debug = True
@@ -46,24 +58,54 @@ def __default_dates_sources(req):
                          req.get('timeframe'))
     return dates_sources
 
+def __csv2string(self, data):
+    si = StringIO.StringIO();
+    cw = csv.writer(si);
+    cw.writerow(data);
+    return si.getvalue().strip('\r\n');
+
+
+def __query_logging(self, ip, user_agent, method, date=None, source=None,
+        asn=None, asn_details=None, compared_asns=None, ip_lookup=None, level=None):
+    if level == 'warning':
+        publisher.info(self.__csv2string([ip, user_agent, method, date,
+            source, asn, asn_details, compared_asns, ip_lookup]))
+    elif level == 'error':
+        publisher.info(self.__csv2string([ip, user_agent, method, date,
+            source, asn, asn_details, compared_asns, ip_lookup]))
+    else:
+        publisher.info(self.__csv2string([ip, user_agent, method, date,
+            source, asn, asn_details, compared_asns, ip_lookup]))
+
+
 @app.route('/json', methods = ['POST'])
 def __entry_point():
     """
         Function called when an query is made on /json. Expects a JSON
         object with at least a 'method' entry.
     """
+    ip = request.remote_addr
+    ua = request.headers.get('User-Agent', 'Empty User-Agent')
     method = request.json.get('method')
     if method is None:
-        # wrong query
-        return json.dumps({})
+        __query_logging(ip, ua, method, level = 'warning')
+        return json.dumps({'error': 'No method provided.'})
     if method not in authorized_methods:
         # unauthorized query
-        return json.dumps({})
+        __query_logging(ip, ua, method, level = 'warning')
+        return json.dumps({'error': 'Unauthorized method.'})
     fct = globals().get(method)
     if fct is None:
-        # unknown method
-        return json.dumps({})
-    return fct(request.json)
+        # unknown method, the method is authorized, but does not exists...
+        __query_logging(ip, ua, method, level = 'error')
+        return json.dumps({'error': 'Unknown method.'})
+    try:
+        result = fct(request.json)
+        __query_logging(ip, ua, method)
+        return result
+    except:
+        __query_logging(ip, ua, method, level = 'error')
+        return json.dumps({'error': 'Something went wrong.'})
 
 def ip_lookup(request):
     """See :class:`bgpranking.api.get_ip_info`"""
