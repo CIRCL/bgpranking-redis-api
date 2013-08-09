@@ -23,9 +23,9 @@ if __name__ == '__main__':
     while 1:
         try:
             if microblog.post_new_top_ranking():
-                #publisher.info('New Ranking posted on twitter and identica.')
+                publisher.info('New Ranking posted on twitter and identica.')
                 print 'New Ranking posted on twitter and identica.'
         except Exception as e:
-            #publisher.error("Something bad occurs: " + e)
+            publisher.error("Something bad occurs: " + e)
             print "Something bad occurs: " + str(e)
         time.sleep(sleep_timer)

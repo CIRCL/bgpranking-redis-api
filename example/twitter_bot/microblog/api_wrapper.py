@@ -14,7 +14,8 @@ import twitter
 import datetime
 import dateutil
 
-from micro_blog_keys import *
+from micro_blog_keys import twitter_consumer_key,twitter_consumer_secret,\
+        twitter_access_key,twitter_access_secret
 import bgpranking
 
 api = None
