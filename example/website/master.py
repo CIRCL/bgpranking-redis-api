@@ -229,7 +229,7 @@ def error_page_404(status, message, traceback, version):
 def handle_error():
     cherrypy.response.status = 500
     cherrypy.response.body = ["<html><body>Sorry, an error occured</body></html>"]
-    publisher.error(_cperror.format_exc())
+    publisher.error('Request: '+ str(cherrypy.request.body_params) + '\n' +_cperror.format_exc())
 
 if __name__ == "__main__":
     config = ConfigParser.RawConfigParser()
