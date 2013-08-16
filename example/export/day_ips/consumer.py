@@ -3,9 +3,15 @@
 
 import redis
 import bgpranking
+import argparse
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Prepare the information to dump.')
+    parser.add_argument('-f', '--full', action="store_true", default=False,
+            help='Do a full dump (asn, block, ip, sources).')
+    args = parser.parse_args()
+
 
     r = redis.Redis(unix_socket_path='./redis_export.sock')
     date = r.get('date')
@@ -20,8 +26,9 @@ if __name__ == '__main__':
             p = r.pipeline(False)
             for ip, sources in ip_descs.get(block).iteritems():
                 p.zincrby('ips', ip, sum([float(weights[s]) for s in sources]))
-                p.hmset(ip, {'asn': asn, 'block':block,
-                    'sources': '|'.join(sources)})
+                if args.full:
+                    p.hmset(ip, {'asn': asn, 'block':block,
+                        'sources': '|'.join(sources)})
             p.execute()
 
 
