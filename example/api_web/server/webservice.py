@@ -58,23 +58,23 @@ def __default_dates_sources(req):
                          req.get('timeframe'))
     return dates_sources
 
-def __csv2string(self, data):
+def __csv2string(data):
     si = StringIO.StringIO();
     cw = csv.writer(si);
     cw.writerow(data);
     return si.getvalue().strip('\r\n');
 
 
-def __query_logging(self, ip, user_agent, method, date=None, source=None,
+def __query_logging(ip, user_agent, method, date=None, source=None,
         asn=None, asn_details=None, compared_asns=None, ip_lookup=None, level=None):
     if level == 'warning':
-        publisher.info(self.__csv2string([ip, user_agent, method, date,
+        publisher.info(__csv2string([ip, user_agent, method, date,
             source, asn, asn_details, compared_asns, ip_lookup]))
     elif level == 'error':
-        publisher.info(self.__csv2string([ip, user_agent, method, date,
+        publisher.info(__csv2string([ip, user_agent, method, date,
             source, asn, asn_details, compared_asns, ip_lookup]))
     else:
-        publisher.info(self.__csv2string([ip, user_agent, method, date,
+        publisher.info(__csv2string([ip, user_agent, method, date,
             source, asn, asn_details, compared_asns, ip_lookup]))
 
 
