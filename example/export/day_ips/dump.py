@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     r = redis.Redis(unix_socket_path='./redis_export.sock')
     date = r.get('date')
-    with open('ips_' + args.date, 'w') as f:
+    with open('ips_' + date, 'w') as f:
         ips = list(r.zrange('ips', 0, -1))
         for i in range(len(ips)):
             ips[i] = "%3s.%3s.%3s.%3s" % tuple(ips[i].split("."))
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         weights = p.execute()
         [f.write(','.join(map(str, iw)) + '\n') for iw in zip(ips, weights)]
     if args.full:
-        with open('full_' + args.date, 'wb') as f:
+        with open('full_' + date, 'wb') as f:
             w = csv.writer(f)
             ips = r.zrange('ips', 0, -1)
             p = r.pipeline(False)
