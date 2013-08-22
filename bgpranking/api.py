@@ -84,6 +84,9 @@ def get_ip_info(ip, days_limit = None):
         publisher.debug('IP2ASN not enabled.')
         to_return['error'] = 'IP2ASN not enabled.'
         return to_return
+    if ip is None:
+        to_return['error'] = 'No IP provided.'
+        return to_return
     for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
         last_date = parser.parse(last).replace(tzinfo=tz.tzutc()).date()
@@ -115,7 +118,10 @@ def get_ip_info(ip, days_limit = None):
                 valid_descriptions.append([date.isoformat(), descr])
             else:
                 # No history found for this ASN
-                publisher.error(\
+                if last_date > datetime.date('2013', '01', '01'):
+                    # ASN has been seen recently, should not happen
+                    # as the asn history module is running since early 2013
+                    publisher.error(\
                         'Unable to find the ASN description of {}. IP address: {}. ASN History might be down.'.\
                         format(asn, ip))
                 valid_descriptions.append(['0000-00-00',
@@ -410,9 +416,9 @@ def __asn_desc_via_history(asn):
         asn_descr = asnhistory.get_last_description(asn)
         if asn_descr is None:
             # The ASN has no descripion in the database
-            publisher.error(\
-                    'Unable to find the ASN description of {}. ASN History might be down.'.\
-                    format(asn))
+            #publisher.error(\
+            #        'Unable to find the ASN description of {}. ASN History might be down.'.\
+            #        format(asn))
             asn_descr = 'No ASN description has been found.'
     else:
         publisher.debug('ASN History not enabled.')
