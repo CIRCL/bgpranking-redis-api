@@ -118,7 +118,7 @@ def get_ip_info(ip, days_limit = None):
                 valid_descriptions.append([date.isoformat(), descr])
             else:
                 # No history found for this ASN
-                if last_date > datetime.date('2013', '01', '01'):
+                if last_date > datetime.date(2013, 01, 01):
                     # ASN has been seen recently, should not happen
                     # as the asn history module is running since early 2013
                     publisher.error(\
