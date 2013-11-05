@@ -10,7 +10,6 @@
 import os
 import cherrypy
 from Cheetah.Template import Template
-import ConfigParser
 import cgi
 import csv
 import StringIO
@@ -232,12 +231,8 @@ def handle_error():
     publisher.error('Request: '+ str(cherrypy.request.params) + '\n' +_cperror.format_exc())
 
 if __name__ == "__main__":
-    config = ConfigParser.RawConfigParser()
-    config_file = "/etc/bgpranking/bgpranking.conf"
-    config.read(config_file)
-
     website = Master()
 
     cherrypy.config.update({'error_page.404': error_page_404})
     cherrypy.config.update({'request.error_response': handle_error})
-    cherrypy.quickstart(website, config = config.get('web','config_file'))
+    cherrypy.quickstart(website, config = 'config/web_bgp-ranking.ini')
