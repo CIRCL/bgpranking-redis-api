@@ -766,6 +766,8 @@ def cache_get_top_asns(source = 'global', date = None, limit = 100,
         return to_return
     temp_rank = []
     for asn, rank in ranks:
+        if asn == '-1':
+            continue
         asn_descr = __asn_desc_via_history(asn)
         temp_rank.append((asn, asn_descr, rank))
     if not with_sources:
