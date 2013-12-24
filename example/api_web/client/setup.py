@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
     name='bgpranking_web',
-    version='1.0',
+    version='1.0.1',
     description='Library to access the BGP Ranking REST API.',
     url='https://github.com/Rafiot/bgpranking-py.git',
     author='Raphaël Vinot',
