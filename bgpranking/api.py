@@ -15,16 +15,23 @@ from . import constraints as c
 
 # Get PTR Record when looking for an IP
 get_PTR = True
-def get_ptr_record(ip):
-    if get_PTR:
-        try:
-            return h.redis.Redis(host='149.13.33.68', port=8323).get(ip)
-        except:
-            pass
-    return None
+if get_PTR:
+    ptr_host='127.0.0.1'
+    ptr_port=8323
+    ptr_redis = h.redis.Redis(host=ptr_host, port=ptr_port)
+
+    def get_ptr_record(ip):
+        if get_PTR:
+            try:
+                return ptr_redis.get(ip)
+            except:
+                pass
+        return None
 
 try:
-    import asnhistory
+    import asnhistory.redis as asnhistory
+    asnhistory.redis_host='127.0.0.1'
+    asnhistory.redis_port=6389
     use_asnhistory = True
 except:
     use_asnhistory = False
@@ -72,6 +79,7 @@ def get_ip_info(ip, days_limit = None):
                     {
                         'ip': ip,
                         'days_limit' : days_limit,
+                        'ptrrecord' : 'ptr.record.com',
                         'history':
                             [
                                 {
@@ -91,8 +99,9 @@ def get_ip_info(ip, days_limit = None):
     """
     if days_limit is None:
         days_limit = 750
-    to_return = {'ip': ip, 'days_limit': days_limit, 'history': [],
-            'ptrrecord': get_ptr_record(ip)}
+    to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
+    if get_PTR:
+        to_return['ptrrecord'] = get_ptr_record(ip)
     if not use_ipasn:
         publisher.debug('IPASN not enabled.')
         to_return['error'] = 'IPASN not enabled.'
@@ -602,8 +611,9 @@ def get_ips_descs(asn, block, date = None, sources = None):
                 to_return[block][ip] = {'sources': [], 'ptrrecord': None}
             to_return[block][ip]['sources'].append(source)
         i += 1
-    for ip in to_return[block]:
-        to_return[block][ip]['ptrrecord'] = get_ptr_record(ip)
+    if get_PTR:
+        for ip in to_return[block]:
+            to_return[block][ip]['ptrrecord'] = get_ptr_record(ip)
     return to_return
 
 def get_stats(dates_sources):
