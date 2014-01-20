@@ -98,7 +98,7 @@ def get_ip_info(ip, days_limit = None):
     if ip is None:
         to_return['error'] = 'No IP provided.'
         return to_return
-    for first, last, asn, block in ipasn.aggregare_history(ip, days_limit):
+    for first, last, asn, block in ipasn.aggregate_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
         last_date = parser.parse(last).replace(tzinfo=tz.tzutc()).date()
         if use_asnhistory:
