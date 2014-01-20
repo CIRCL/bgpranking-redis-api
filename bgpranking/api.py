@@ -30,10 +30,10 @@ except:
     use_asnhistory = False
 
 try:
-    import ip_asn_history as ip2asn
-    use_ip2asn = True
+    import ipasn.redis as ipasn
+    use_ipasn = True
 except:
-    use_ip2asn = False
+    use_ipasn = False
 
 
 logging = True
@@ -91,14 +91,14 @@ def get_ip_info(ip, days_limit = None):
         days_limit = 750
     to_return = {'ip': ip, 'days_limit': days_limit, 'history': [],
             'ptrrecord': get_ptr_record(ip)}
-    if not use_ip2asn:
-        publisher.debug('IP2ASN not enabled.')
-        to_return['error'] = 'IP2ASN not enabled.'
+    if not use_ipasn:
+        publisher.debug('IPASN not enabled.')
+        to_return['error'] = 'IPASN not enabled.'
         return to_return
     if ip is None:
         to_return['error'] = 'No IP provided.'
         return to_return
-    for first, last, asn, block in ip2asn.aggregare_history(ip, days_limit):
+    for first, last, asn, block in ipasn.aggregare_history(ip, days_limit):
         first_date = parser.parse(first).replace(tzinfo=tz.tzutc()).date()
         last_date = parser.parse(last).replace(tzinfo=tz.tzutc()).date()
         if use_asnhistory:
