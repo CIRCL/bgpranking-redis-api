@@ -89,7 +89,8 @@ def get_ip_info(ip, days_limit = None):
     """
     if days_limit is None:
         days_limit = 750
-    to_return = {'ip': ip, 'days_limit': days_limit, 'history': []}
+    to_return = {'ip': ip, 'days_limit': days_limit, 'history': [],
+            'ptrrecord': get_ptr_record(ip)}
     if not use_ip2asn:
         publisher.debug('IP2ASN not enabled.')
         to_return['error'] = 'IP2ASN not enabled.'
@@ -142,7 +143,6 @@ def get_ip_info(ip, days_limit = None):
         entry['block'] = block
         entry['timestamp'] = get_first_seen(asn, block)
         entry['descriptions'] = valid_descriptions
-        entry['ptrrecord'] = get_ptr_record(ip)
         to_return['history'].append(entry)
     return to_return
 

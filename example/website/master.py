@@ -215,8 +215,9 @@ class Master(object):
                 webpage='ip_lookup', ip_lookup=ip)
         template = self.__init_template('ip_lookup')
         template.ip = ip
-        history = master_controler.get_ip_lookup(ip)
+        history, ptrrecord = master_controler.get_ip_lookup(ip)
         template.history = history
+        template.ptrrecord = ptrrecord
         return str(template)
 
 def error_page_404(status, message, traceback, version):

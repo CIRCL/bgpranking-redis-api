@@ -75,4 +75,4 @@ def get_ip_lookup(ip):
     response = bgpranking.get_ip_info(ip)
     if len(response.get('history')) == 0:
         return None
-    return response.get('history')
+    return response.get('history'), response.get('ptrrecord')

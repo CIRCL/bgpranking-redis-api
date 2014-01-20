@@ -17,8 +17,8 @@
         <input type="submit" value="Submit"/>
       </div>
     </form> <br/>
-    #if $entry['ptrrecord'] is not None
-      <b>PTR Record</b>: $entry['ptrrecord']
+    #if $ptrrecord is not None
+      <b>PTR Record</b>: $ptrrecord
     #end if
     <ul>
       #if $history is not None
