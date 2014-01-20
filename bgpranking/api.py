@@ -31,6 +31,8 @@ except:
 
 try:
     import ipasn.redis as ipasn
+    ipasn.hostname='127.0.0.1'
+    ipasn.port=6390
     use_ipasn = True
 except:
     use_ipasn = False
