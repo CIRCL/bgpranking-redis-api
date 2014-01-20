@@ -13,6 +13,16 @@ import datetime
 from . import helper_global as h
 from . import constraints as c
 
+# Get PTR Record when looking for an IP
+get_PTR = True
+def get_ptr_record(ip):
+    if get_PTR:
+        try:
+            return h.redis.Redis(host='149.13.33.68', port=8323).get(ip)
+        except:
+            pass
+    return None
+
 try:
     import asnhistory
     use_asnhistory = True
@@ -132,6 +142,7 @@ def get_ip_info(ip, days_limit = None):
         entry['block'] = block
         entry['timestamp'] = get_first_seen(asn, block)
         entry['descriptions'] = valid_descriptions
+        entry['ptrrecord'] = get_ptr_record(ip)
         to_return['history'].append(entry)
     return to_return
 
