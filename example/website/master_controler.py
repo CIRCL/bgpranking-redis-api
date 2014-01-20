@@ -66,9 +66,9 @@ def get_ip_info(asn, block, date = None, sources = None):
     response = bgpranking.get_ips_descs(asn, block, date, sources)
     if response.get(block) is None:
         return None
-    to_return = [(ip, ', '.join(sources))
-            for ip, sources in response[block].iteritems()]
-    return sorted(to_return, key=lambda element: len(element[1]),
+    to_return = [(ip, details['ptrrecord'], ', '.join(details['sources']))
+            for ip, details in response[block].iteritems()]
+    return sorted(to_return, key=lambda element: len(element[2]),
             reverse=True)
 
 def get_ip_lookup(ip):

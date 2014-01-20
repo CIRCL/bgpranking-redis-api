@@ -141,13 +141,15 @@
                 <thead>
                     <tr>
                         <th scope="col" >IP Address</th>
+                        <th scope="col" >PTR Record</th>
                         <th scope="col" >Source(s)</th>
                     </tr>
                 </thead>
                 #for $ip_desc in $ip_descs
                 <tr>
                   <td><a href="ip_lookup?ip=$ip_desc[0]">$ip_desc[0]</a></td>
-                    <td>$ip_desc[1]</td>
+                  <td>$ip_desc[1]</td>
+                  <td>$ip_desc[2]</td>
                 </tr>
                 #end for
             </table>

@@ -563,7 +563,11 @@ def get_ips_descs(asn, block, date = None, sources = None):
                         'block': block
                         block:
                             {
-                                ip: [source1, source2, ...],
+                                ip:
+                                    {
+                                        'sources': [source1, source2, ...],
+                                        'ptrrecord': 'ptr.record.com'
+                                    }
                                 ...
                             }
                     }
@@ -593,9 +597,11 @@ def get_ips_descs(asn, block, date = None, sources = None):
         for ip_details in ips:
             ip, timestamp = ip_details.split('|')
             if to_return[block].get(ip) is None:
-                to_return[block][ip] = []
-            to_return[block][ip].append(source)
+                to_return[block][ip] = {'sources': [], 'ptrrecord': None}
+            to_return[block][ip]['sources'].append(source)
         i += 1
+    for ip in to_return[block]:
+        to_return[block][ip]['ptrrecord'] = get_ptr_record(ip)
     return to_return
 
 def get_stats(dates_sources):

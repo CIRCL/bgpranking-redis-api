@@ -215,9 +215,13 @@ class Master(object):
                 webpage='ip_lookup', ip_lookup=ip)
         template = self.__init_template('ip_lookup')
         template.ip = ip
-        history, ptrrecord = master_controler.get_ip_lookup(ip)
-        template.history = history
-        template.ptrrecord = ptrrecord
+        result = master_controler.get_ip_lookup(ip)
+        if result is not None:
+            template.history = result[0]
+            template.ptrrecord = result[1]
+        else:
+            template.history = None
+            template.ptrrecord = None
         return str(template)
 
 def error_page_404(status, message, traceback, version):
