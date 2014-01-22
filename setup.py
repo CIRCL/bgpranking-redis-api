@@ -23,6 +23,6 @@ setup(
         'Topic :: Internet',
         'Topic :: System :: Networking',
         ],
-    install_requires=['IPy', 'pubsublogger', 'redis', 'dateutil',
+    install_requires=['IPy', 'pubsublogger', 'redis', 'python-dateutil',
         'asnhistory-redis', 'ipasn-redis'],
     )
