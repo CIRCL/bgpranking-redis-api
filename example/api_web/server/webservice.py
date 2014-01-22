@@ -24,8 +24,13 @@ from flask import Flask, json, request
 import StringIO
 import csv
 
-import bgpranking
-
+import bgpranking.redis as bgpranking
+bgpranking.asnhistory.redis_host='127.0.0.1'
+bgpranking.asnhistory.redis_port=6389
+bgpranking.ipasn.hostname='127.0.0.1'
+bgpranking.ipasn.port=6390
+bgpranking.ptr_host='127.0.0.1'
+bgpranking.ptr_port=8323
 
 logging = True
 try:
