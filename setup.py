@@ -11,7 +11,7 @@ setup(
     url='https://github.com/CIRCL/bgpranking-redis-api',
     description='API to access the Redis database of a BGP Ranking instance.',
     long_description=open('README.md').read(),
-    packages=['bgpranking', 'bgpranking.redis'],
+    packages=['bgpranking_redis'],
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Development Status :: 5 - Production/Stable',

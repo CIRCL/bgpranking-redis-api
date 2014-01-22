@@ -16,7 +16,7 @@ from . import constraints as c
 # Get PTR Record when looking for an IP
 get_PTR = True
 if get_PTR:
-    ptr_host='127.0.0.1'
+    ptr_host='149.13.33.68'
     ptr_port=8323
     ptr_redis = h.redis.Redis(host=ptr_host, port=ptr_port)
 
@@ -38,7 +38,7 @@ except:
 
 try:
     import ipasn.redis as ipasn
-    ipasn.hostname='127.0.0.1'
+    ipasn.hostname='149.13.33.68'
     ipasn.port=6390
     use_ipasn = True
 except:
@@ -806,4 +806,4 @@ def cache_get_top_asns(source = 'global', date = None, limit = 100,
         [p.smembers('{}|{}'.format(date, rank[0])) for rank in temp_rank]
         to_return['top_list'] = list(zip(temp_rank, p.execute()))
     return to_return
-
+a
