@@ -22,7 +22,6 @@ url = 'http://bgpranking.circl.lu/json'
 def __prepare_request(query):
     headers = {'content-type': 'application/json'}
     r = requests.post(url, data=json.dumps(query), headers=headers)
-    print r
     return r.json()
 
 
