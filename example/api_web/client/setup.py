@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='bgpranking-web',
-    version='1.0',
+    version='1.1',
     description='Library to access the BGP Ranking REST API.',
     url='https://github.com/CIRCL/bgpranking-redis-api',
     author='Raphaël Vinot',
