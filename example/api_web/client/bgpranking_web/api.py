@@ -107,3 +107,10 @@ def cached_top_asns(date=None, source=None, limit=None, with_sources=None):
     query.update({'date': date, 'source': source, 'limit': limit,
                   'with_sources': with_sources})
     return __prepare_request(query)
+
+
+def cached_position(asn, date=None):
+    """See :class:`bgpranking.api.cache_get_position`"""
+    query = {'method': 'cached_position'}
+    query.update({'asn': asn, 'date': date})
+    return __prepare_request(query)

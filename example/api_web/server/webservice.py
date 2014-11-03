@@ -206,5 +206,17 @@ def cached_top_asns(request):
     return json.dumps({})
 
 
+def cached_position(request):
+    """See :class:`bgpranking.api.cache_get_position`"""
+    asn = request.get('asn')
+    if asn is None:
+        return json.dumps({})
+    cached_dates = bgpranking.cache_get_dates()
+    date = request.get('date')
+    if date is None or date in cached_dates:
+        return json.dumps(bgpranking.cache_get_position(asn, date=date),
+                          cls=SetEncoder)
+    return json.dumps({})
+
 if __name__ == '__main__':
     app.run()
