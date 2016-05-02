@@ -8,9 +8,10 @@ from socket import socket, AF_INET, SOCK_STREAM
 import json
 import operator
 
-import bgpranking
+from bgpranking_redis import BGPRanking
 
-def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
+
+def aggregate_csvs(output_csv_dir, output_agg_dir, with_world=True, **kwargs):
     """
         Aggregate lists of ASNs in a single CSV file.
 
@@ -29,7 +30,7 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
             reader = DictReader(f)
             for entry in reader:
                 # Removing 1 because we aggregate data
-                rank = float(entry['rank']) -1
+                rank = float(entry['rank']) - 1
                 if result.get(entry['day']) is None:
                     result[entry['day']] = {}
                 if with_world:
@@ -49,11 +50,12 @@ def aggregate_csvs(output_csv_dir, output_agg_dir, with_world = True, **kwargs):
     fieldnames += kwargs.keys()
     filename = os.path.join(output_agg_dir, '_'.join(fieldnames))
     with open(filename, 'w') as f:
-        w = DictWriter(f, fieldnames= ['date'] + fieldnames)
+        w = DictWriter(f, fieldnames=['date'] + fieldnames)
         w.writeheader()
         for date, entries in result.iteritems():
             entries.update({'date': date})
             w.writerow(entries)
+
 
 def get_asns_country_code(asns):
     text_lines = ["begin", "verbose"]
@@ -79,11 +81,12 @@ def get_asns_country_code(asns):
         to_return[asn] = cc
     return to_return
 
-def generate_dumps_for_worldmap(output_dir_js = None, output_dir_csv = None):
-    ranks = bgpranking.cache_get_top_asns(limit = -1, with_sources = False)
+
+def generate_dumps_for_worldmap(output_dir_js=None, output_dir_csv=None):
+    bgpranking = BGPRanking()
+    ranks = bgpranking.cache_get_top_asns(limit=-1, with_sources=False)
     if ranks.get('top_list') is not None:
-        info = get_asns_country_code([asn for asn, description, rank
-            in ranks.get('top_list')])
+        info = get_asns_country_code([asn for asn, description, rank in ranks.get('top_list')])
         to_dump = {}
         for asn, d, rank in ranks.get('top_list'):
             cc = info[asn]
@@ -95,10 +98,9 @@ def generate_dumps_for_worldmap(output_dir_js = None, output_dir_csv = None):
             f.write("var ranks =\n" + json.dumps(to_dump))
             f.close()
         if output_dir_csv is not None:
-            for_csv = sorted(to_dump.iteritems(), key=operator.itemgetter(1),
-                    reverse=True)
+            for_csv = sorted(to_dump.iteritems(), key=operator.itemgetter(1), reverse=True)
             with open(os.path.join(output_dir_csv, 'worldmap.csv'), "w") as f:
-                w = DictWriter(f, fieldnames= ['country', 'rank'])
+                w = DictWriter(f, fieldnames=['country', 'rank'])
                 w.writeheader()
                 for country, rank in for_csv:
                     w.writerow({'country': country, 'rank': rank})

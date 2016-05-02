@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='bgpranking-redis',
-    version='1.0',
+    version='2.0',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
@@ -22,7 +22,6 @@ setup(
         'Topic :: Security',
         'Topic :: Internet',
         'Topic :: System :: Networking',
-        ],
-    install_requires=['IPy', 'pubsublogger', 'redis', 'python-dateutil',
-        'asnhistory-redis', 'ipasn-redis'],
-    )
+    ],
+    install_requires=['IPy', 'pubsublogger', 'redis', 'python-dateutil', 'asnhistory', 'ipasn-redis'],
+)
